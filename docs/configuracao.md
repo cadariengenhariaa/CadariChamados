@@ -1,10 +1,10 @@
 # Configuração
 
-Tudo o que muda de ambiente para ambiente, ou ao longo do tempo, fica fora do código: na pasta de dados da rede (`config.json` e `nomes_equipe.csv`) ou no `config.py`. Alterações no `config.json` e no `nomes_equipe.csv` **não exigem recompilar** o programa.
+Tudo o que muda de ambiente para ambiente, ou ao longo do tempo, fica fora do código: na pasta de dados da rede (`config.json` e `nomes_equipe.csv`) ou em `src/chamados/config.py`. Alterações no `config.json` e no `nomes_equipe.csv` **não exigem recompilar** o programa.
 
 ## Pasta de dados
 
-Definida em `config.py`:
+Definida em `src/chamados/config.py`:
 
 ```python
 PASTA_DADOS_PADRAO = r"Z:\Biblioteca\Padronização\Cadari\Processos BIM\Formulário de bugs\Banco de dados"
@@ -32,13 +32,13 @@ Fica na pasta de dados e **não vai para o GitHub**. O modelo está em `config.e
     "tag": {"Id": 286, "Name": "Chamados", "Color": "#ff4500", "Active": true},
     "seguidores_fixos": [10],
     "status": {
-      "Não visto": 11583,
-      "Visto": 11583,
-      "Em execução": 11585,
-      "Solucionado": 11584,
-      "Não solucionado": 11677,
-      "Fechado": 11584
+      "Novas": 11583,
+      "Em andamento": 11585,
+      "Pendência Interna": 11677,
+      "Finalizadas": 11584
     },
+    "status_final": "Finalizadas",
+    "sincronizar_equipe": true,
     "timeout_segundos": 30
   }
 }
@@ -53,16 +53,18 @@ Fica na pasta de dados e **não vai para o GitHub**. O modelo está em `config.e
 | `quadro_id` | Quadro dentro do projeto | 2271 (CHAMADOS e PROTOCOLOS) |
 | `tag` | Etiqueta aplicada a toda tarefa | 286, "Chamados" |
 | `seguidores_fixos` | IDs de usuários que seguem todas as tarefas, além do solicitante | `[10]` (Renata) |
-| `status` | Conversão do status do programa para o ID do status no quadro | ver tabela em [arquitetura.md](arquitetura.md#status) |
+| `status` | Status do quadro e seus IDs, usados quando o FlowUp não responde na abertura | ver tabela em [arquitetura.md](arquitetura.md#status) |
+| `status_final` | Status que encerra o chamado | Finalizadas |
+| `sincronizar_equipe` | Atualiza o `nomes_equipe.csv` pelo FlowUp a cada abertura | `true` |
 | `timeout_segundos` | Tempo máximo de espera por resposta da API | 30 |
 
-Campos ausentes assumem os valores padrão de `FLOWUP_PADRAO` em `config.py`. No campo `status`, basta escrever os status que mudam; os outros continuam com o padrão.
+Campos ausentes assumem os valores padrão de `FLOWUP_PADRAO` em `src/chamados/config.py`. No campo `status`, basta escrever os status que mudam; os outros continuam com o padrão.
 
 Quando as mudanças valem: o token e o endereço são lidos a cada chamada à API; os IDs, os seguidores e os status, cada vez que a janela "Acompanhar Chamado" é aberta.
 
 Cuidados ao editar:
 - Use o Bloco de Notas ou o VS Code e salve em UTF-8. O arquivo precisa continuar sendo um JSON válido (aspas duplas, vírgula entre os itens, nenhuma vírgula depois do último).
-- Depois de editar, rode `python ferramentas\diagnostico_flowup.py`. Ele lê o mesmo arquivo e confere os IDs no FlowUp.
+- Depois de editar, rode `scripts\diagnosticar_flowup.bat`. Ele lê o mesmo arquivo e confere os IDs no FlowUp.
 
 ## Token do FlowUp
 
@@ -73,7 +75,7 @@ O programa se autentica com um token Bearer. O token é gerado a partir de uma *
 Com a senha de API em mãos:
 
 ```bat
-python ferramentas\diagnostico_flowup.py --gerar-token
+scripts\diagnosticar_flowup.bat --gerar-token
 ```
 
 A ferramenta pede o subdomínio da instância FlowUp da Cadari e a senha, chama o endpoint `/token` e oferece gravar o token no `config.json`. Não é preciso recompilar nem reiniciar os programas abertos.
@@ -110,7 +112,7 @@ Id,Name,Email
 | `Name` | Nome mostrado nas listas e gravado nos chamados |
 | `Email` | Só para referência; o programa não usa |
 
-**Desde a versão 2.1 a lista é atualizada sozinha** a cada abertura do programa (`equipe.py`): entra quem ficou ativo no FlowUp, sai quem foi desativado e, quando o FlowUp reaproveita um ID para outra pessoa, o nome é trocado. O nome de quem já estava na lista é mantido quando o primeiro nome bate (os chamados antigos guardam o nome como texto). Se o FlowUp não responder, vale o arquivo como está. Para desligar, use `"sincronizar_equipe": false` no `config.json` e mantenha o arquivo à mão com as regras abaixo.
+**Desde a versão 2.1 a lista é atualizada sozinha** a cada abertura do programa (`src/chamados/equipe.py`): entra quem ficou ativo no FlowUp, sai quem foi desativado e, quando o FlowUp reaproveita um ID para outra pessoa, o nome é trocado. O nome de quem já estava na lista é mantido quando o primeiro nome bate (os chamados antigos guardam o nome como texto). Se o FlowUp não responder, vale o arquivo como está. Para desligar, use `"sincronizar_equipe": false` no `config.json` e mantenha o arquivo à mão com as regras abaixo.
 
 Regras:
 - A lista deve ter as mesmas pessoas que estão **ativas** no FlowUp. Quem está na lista e não está ativo não deve ser designado; quem está ativo e fora da lista não consegue abrir chamado.
@@ -122,7 +124,7 @@ Regras:
 Para ver as diferenças entre a lista e o FlowUp:
 
 ```bat
-python ferramentas\diagnostico_flowup.py
+scripts\diagnosticar_flowup.bat
 ```
 
 A seção "Lista da equipe" mostra quem está inativo, quem está fora da lista e os IDs que mudaram de dono.
@@ -139,13 +141,13 @@ O diagnóstico já mostra os status do quadro configurado e os usuários ativos.
 | Usuários ativos | `GET /v1/User/GetActiveUsers` |
 | Uma tarefa | `GET /v1/Task/GetTask/<id>` |
 
-## Opções de software e ferramenta
+## Categorias e assuntos do formulário
 
-Estão no dicionário `FERRAMENTAS`, no início de `janelas.py` (vale para o formulário e para o filtro). Ao alterar, recompile e distribua.
+Estão no dicionário `FERRAMENTAS`, em `src/chamados/categorias.py` (vale para o formulário e para o filtro). Cada chave é uma categoria e a lista ao lado são os assuntos dela. No banco continuam nas colunas `software` (categoria) e `ferramenta` (assunto). Ao alterar, gere o exe de novo e distribua.
 
 ## Versão do programa
 
-`VERSAO` em `config.py`. Aparece na barra de título e no log de abertura. Aumente a cada versão distribuída:
+`__version__` em `src/chamados/__init__.py`. Aparece na barra de título e no log de abertura. Aumente a cada versão distribuída:
 - correção sem mudança de comportamento: 2.0.0 para 2.0.1;
 - recurso novo: 2.0.0 para 2.1.0;
 - mudança que exige ação de todos (pasta de dados nova, banco novo): 2.0.0 para 3.0.0.
