@@ -15,5 +15,5 @@ Os dados do Chamados ficavam em `Processos BIM\Formulário de bugs\Banco de dado
 
 ## Consequências
 
-- Versão 2.4.0. O exe 2.3.x procura o caminho antigo e para de funcionar; todos precisam do exe novo.
+- Versão 2.3.2. O exe 2.3.x procura o caminho antigo e para de funcionar; todos precisam do exe novo.
 - Quem usa o programa precisa de leitura em `entrada` e leitura e gravação em `saida`.

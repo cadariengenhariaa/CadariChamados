@@ -2,7 +2,7 @@
 
 Formato: a versão mais nova primeiro. Cada versão distribuída deve ter uma entrada aqui e o mesmo número em `__version__` no `src/chamados/__init__.py`.
 
-## 2.4.0 (novembro de 2026)
+## 2.3.2 (novembro de 2026)
 
 ### Alterado
 - Os dados passaram para `Z:\Desenvolvimento\Dados\Chamados`, a pasta que reúne os dados dos programas internos. Dentro dela, o que alimenta o programa fica em `entrada\` (`config.json`, `nomes_equipe.csv`) e o que ele produz fica em `saida\` (`chamados.db`, `anexos\`, `logs\`).
@@ -11,7 +11,7 @@ Formato: a versão mais nova primeiro. Cada versão distribuída deve ter uma en
 - Mensagens da verificação do computador apontam para a nova pasta.
 
 ### Migração
-- Exe 2.3.x procura os dados no caminho antigo e não funciona mais: todos precisam do exe 2.4.0.
+- Exe 2.3.x procura os dados no caminho antigo e não funciona mais: todos precisam do exe 2.3.2.
 - Os dados existentes foram copiados da pasta antiga; nada foi apagado nela.
 
 ## 2.3.1 (novembro de 2026)

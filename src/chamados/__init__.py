@@ -16,4 +16,4 @@ Ponto de entrada: __main__.py (python -m chamados).
 Visão geral: docs/arquitetura.md
 """
 
-__version__ = "2.4.0"
+__version__ = "2.3.2"
