@@ -1,11 +1,8 @@
-# Dependências do Sistema de Chamados (Python 3.12)
-# Instalar com:  pip install -r requirements.txt
+# Bibliotecas do programa Abertura de Chamados (Python 3.12)
+# Os comandos de scripts\ instalam tudo sozinhos (via requirements-dev.txt).
 customtkinter==5.2.2
 pillow==11.3.0
 tkcalendar==1.6.1
 babel==2.17.0
 requests==2.32.5
 pendulum==3.1.0
-
-# Somente para gerar o executável
-pyinstaller==6.16.0

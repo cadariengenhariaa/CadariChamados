@@ -1,6 +1,50 @@
 # Histórico de versões
 
-Formato: a versão mais nova primeiro. Cada versão distribuída deve ter uma entrada aqui e o mesmo número em `VERSAO` no `chamados/config.py`.
+Formato: a versão mais nova primeiro. Cada versão distribuída deve ter uma entrada aqui e o mesmo número em `__version__` no `src/chamados/__init__.py`.
+
+## 2.3.3 (novembro de 2026)
+
+### Adicionado
+- Campo **Urgência** (Baixa, Média, Alta, Urgente) no novo chamado e nos detalhes do chamado. Vai para a prioridade da tarefa no FlowUp. Chamados abertos antes ficam sem urgência e não enviam prioridade.
+- Assunto "Download de disciplinas complementares" na categoria Revit (chamado C052).
+
+### Corrigido
+- Ao mudar o zoom, a tela escondida reaparecia por cima da aba aberta e a janela parecia trocar de aba sozinha. Agora a aba ativa é reposta depois de cada mudança de zoom.
+
+### Alterado
+- Fontes da interface 2 pixels maiores (menus, campos, botões, tabela e calendário) e linhas da tabela mais altas.
+- Em Novo chamado, **Data de entrega**, **Status inicial** e **Urgência** ficam na mesma linha; nos detalhes do chamado, Status e Urgência ficam lado a lado.
+- O banco ganha a coluna `urgencia` sozinho na primeira abertura da 2.3.3 (os exes anteriores continuam funcionando com ela).
+- Janela inicial maior (até 1480 x 920, sem passar do tamanho da tela) e botões mais largos para caber o texto maior.
+
+## 2.3.2 (novembro de 2026)
+
+### Alterado
+- Os dados passaram para `Z:\Desenvolvimento\Dados\Chamados`, a pasta que reúne os dados dos programas internos. Dentro dela, o que alimenta o programa fica em `entrada\` (`config.json`, `nomes_equipe.csv`) e o que ele produz fica em `saida\` (`chamados.db`, `anexos\`, `logs\`).
+- O executável passou a ser distribuído em `Z:\Biblioteca\Padronização\Cadari\Executaveis`, pasta que toda a equipe acessa. O programa não depende do lugar do exe.
+- Pacote da Release passou a se chamar `CadariChamados-vX.Y.Z.zip` (o repositório se chama CadariChamados).
+- Mensagens da verificação do computador apontam para a nova pasta.
+
+### Migração
+- Exe 2.3.x procura os dados no caminho antigo e não funciona mais: todos precisam do exe 2.3.2.
+- Os dados existentes foram copiados da pasta antiga; nada foi apagado nela.
+
+## 2.3.1 (novembro de 2026)
+
+### Alterado
+- Repositório no Padrão de repositórios da Cadari (decisão em `design/decisoes/0001-padrao-de-repositorio.md`): código em `src/chamados/`, testes em `tests/` (um arquivo por módulo), comandos em `scripts\` e `Makefile` na raiz.
+- Ponto de entrada passou de `main.py` para `src/chamados/__main__.py` (`python -m chamados` ou `scripts\executar.bat`).
+- A versão fica só em `src/chamados/__init__.py` (`__version__`); `config.VERSAO` lê de lá.
+- Imports internos do pacote passaram a ser absolutos (`from chamados.config import ...`).
+- Receita do executável movida para `scripts\abertura_de_chamados.spec`, chamada por `scripts\gerar_executavel.bat`, que também gera o `.zip` da versão para a Release.
+- Diagnóstico do FlowUp movido de `ferramentas/` para o pacote (`chamados.diagnostico_flowup`), rodado por `scripts\diagnosticar_flowup.bat`.
+- Documentação renomeada: `docs/desenvolvimento.md` e `docs/manutencao.md`. README reescrito pelo modelo do padrão.
+- `pyinstaller` saiu de `requirements.txt` e foi para `requirements-dev.txt`, junto com `coverage`.
+- `.gitignore`, `.gitattributes` (CRLF nos `.bat`) e modelo de Pull Request (`.github/`) padrão.
+- Nenhuma mudança de comportamento.
+
+### Removido
+- Cópias antigas dos módulos na raiz (`Bugs.py`, `config.py`, `database.py`, `equipe.py`, `flowup_api.py`, `janelas.py`, `servico.py`, `tema.py`, `verificacao.py`) e a pasta `matriz/`, que repetiam o que já estava em `chamados/` e `assets/`.
 
 ## 2.3.0 (outubro de 2026)
 
