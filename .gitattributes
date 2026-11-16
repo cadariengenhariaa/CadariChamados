@@ -1,5 +1,8 @@
-# Texto com fim de linha normalizado; imagens e ícones como binário
+# Fim de linha normalizado; os .bat precisam de CRLF
 * text=auto
+*.bat text eol=crlf
 *.png binary
 *.ico binary
+*.jpg binary
+*.xlsx binary
 *.db binary

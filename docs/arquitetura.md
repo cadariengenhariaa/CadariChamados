@@ -29,15 +29,24 @@ flowchart LR
 
 | Arquivo | Responsabilidade |
 |---|---|
-| `Bugs.py` | Ponto de entrada. Configura o log, mostra a tela de carregamento, cria a tabela se preciso, lê a lista da equipe e abre a tela inicial com os três botões. O nome vem da primeira versão (formulário de bugs) e foi mantido porque o `.spec` e os atalhos dependem dele. |
-| `janelas.py` | Telas: carregamento, aba "Novo chamado" (abertura e encaminhamento) e aba "Chamados" (lista e detalhes). |
-| `tema.py` | Identidade visual: cores (claro, escuro), fonte Franklin Gothic Book, título com listra, rodapé, botões e campos. |
-| `servico.py` | Regras da integração: montar os dados, criar ou atualizar a tarefa, excluir chamado e tarefa. |
-| `equipe.py` | Sincroniza o `nomes_equipe.csv` com os usuários ativos do FlowUp a cada abertura. |
-| `database.py` | Todas as consultas ao SQLite. Nenhum outro módulo escreve SQL. |
-| `flowup_api.py` | Chamadas HTTP ao FlowUp. Trata redirecionamento, token recusado e falta de conexão e devolve mensagens curtas. |
-| `config.py` | Versão do programa, local da pasta de dados, leitura do `config.json`, valores padrão do FlowUp e configuração do log. |
-| `ferramentas/diagnostico_flowup.py` | Verificação da integração, para uso de quem mantém o sistema. Não faz parte do exe. |
+| `src/chamados/__main__.py` | Ponto de entrada (`python -m chamados`). Fecha a tela do PyInstaller, configura o log e abre a janela principal; erros antes da janela abrir aparecem numa caixa de diálogo. |
+| `src/chamados/config.py` | Local da pasta de dados, leitura do `config.json`, valores padrão do FlowUp e configuração do log. |
+| `src/chamados/categorias.py` | Categorias e assuntos do formulário (e do filtro da lista). |
+| `src/chamados/database.py` | Todas as consultas ao SQLite. Nenhum outro módulo escreve SQL. |
+| `src/chamados/equipe.py` | Sincroniza o `nomes_equipe.csv` com os usuários ativos do FlowUp a cada abertura. |
+| `src/chamados/flowup_api.py` | Chamadas HTTP ao FlowUp. Trata redirecionamento, token recusado e falta de conexão e devolve mensagens curtas. |
+| `src/chamados/servico.py` | Regras da integração: montar os dados, criar ou atualizar a tarefa, excluir chamado e tarefa. |
+| `src/chamados/verificacao.py` | Verificação do computador: pasta da rede, gravação, banco, lista da equipe, configuração e conexão com o FlowUp. |
+| `src/chamados/interface/app.py` | Janela principal: carregamento em segundo plano, topo com abas, tema escuro, zoom e botão "Verificar computador". |
+| `src/chamados/interface/carregamento.py` | Tela de carregamento com a barra de progresso. |
+| `src/chamados/interface/janela_verificacao.py` | Resultado da verificação do computador, com relatório para copiar. |
+| `src/chamados/interface/novo_chamado.py` | Aba "Novo chamado" (abertura e encaminhamento). |
+| `src/chamados/interface/lista_chamados.py` | Aba "Chamados" (lista, filtros, detalhes, excluir e exportar). |
+| `src/chamados/interface/comum.py` | Funções usadas por mais de uma tela (datas, ordenação de nomes, campo de calendário). |
+| `src/chamados/interface/tema.py` | Identidade visual: cores (claro, escuro), fonte Franklin Gothic Book, título com listra, rodapé, botões e campos. |
+| `src/chamados/diagnostico_flowup.py` | Verificação da integração, para uso de quem mantém o sistema. Não faz parte do exe. Rodar com `scripts\diagnosticar_flowup.bat`. |
+
+A regra de dependência é de cima para baixo: a interface usa o núcleo (`servico`, `database`, `equipe`, `verificacao`), o núcleo usa `flowup_api` e `config`, e nada do núcleo importa a interface. Assim os testes e o diagnóstico usam o núcleo sem abrir janela.
 
 ## Telas
 
@@ -46,11 +55,11 @@ flowchart LR
 ### Tela inicial
 Botões "1 - Abrir Chamado", "2 - Acompanhar Chamado" e "3 - Ver Todos os Chamados", e a chave de modo escuro. A versão aparece na barra de título, por exemplo `Sistema de Chamados (v2.0.0)`.
 
-Antes dela aparecem duas telas de carregamento: a do PyInstaller (imagem `matriz/tela_abertura.png`, enquanto o exe se descompacta) e a do próprio programa, com frases aleatórias, enquanto o banco e a lista da equipe são lidos da rede. Se a rede não responder, a tela inicial abre mesmo assim e mostra o erro.
+Antes dela aparecem duas telas de carregamento: a do PyInstaller (imagem `assets/tela_abertura.png`, enquanto o exe se descompacta) e a do próprio programa, com frases aleatórias, enquanto o banco e a lista da equipe são lidos da rede. Se a rede não responder, a tela inicial abre mesmo assim e mostra o erro.
 
 ### Abrir Chamado (`AbrirChamadoWindow`)
 - Campos obrigatórios: nome, software e tema. Ferramenta, descrição e imagem são opcionais.
-- As opções de software e ferramenta estão no dicionário `tool_options` (ver [configuracao.md](configuracao.md#opções-de-software-e-ferramenta)).
+- As categorias e os assuntos estão em `src/chamados/categorias.py` (ver [configuracao.md](configuracao.md#categorias-e-assuntos-do-formulário)).
 - A imagem anexada é copiada para `anexos\` na pasta de dados com o nome `<protocolo>_<nome original>`. No banco fica o caminho relativo (`anexos\C034_print.png`).
 
 ### Acompanhar Chamado (`AcompanharChamadoWindow`)
@@ -66,7 +75,7 @@ Lista com filtros por status, software, solicitante e responsável, botão "Ver 
 
 ### Pasta de dados
 
-Padrão: `Z:\Biblioteca\Padronização\Cadari\Processos BIM\Formulário de bugs\Banco de dados` (definido em `config.py`, pode ser trocado pela variável `CHAMADOS_PASTA_DADOS`).
+Padrão: `Z:\Biblioteca\Padronização\Cadari\Processos BIM\Formulário de bugs\Banco de dados` (definido em `src/chamados/config.py`, pode ser trocado pela variável `CHAMADOS_PASTA_DADOS`).
 
 | Item | Conteúdo |
 |---|---|
@@ -75,7 +84,7 @@ Padrão: `Z:\Biblioteca\Padronização\Cadari\Processos BIM\Formulário de bugs\
 | `config.json` | Token e IDs do FlowUp |
 | `anexos\` | Imagens anexadas aos chamados (criada no primeiro anexo) |
 | `logs\` | Um arquivo por usuário e mês, `AAAA-MM_<usuário do Windows>.log` |
-| `icone.ico`, `Tela abertura.png` | Restos da versão 1.x: o exe antigo lê o `icone.ico` daqui e a compilação antiga usava os dois. As cópias atuais estão em `matriz/`. Podem ser apagados quando todos estiverem na 2.0 |
+| `icone.ico`, `Tela abertura.png` | Restos da versão 1.x: o exe antigo lê o `icone.ico` daqui e a compilação antiga usava os dois. As cópias atuais estão em `assets/`. Podem ser apagados quando todos estiverem na 2.0 |
 
 ### Tabela `chamados`
 
@@ -109,7 +118,7 @@ API pública: `https://api.flowup.me/v1/...`, documentação em https://api.flow
 | Salvar | chamado com `flowup_task_id` | `PUT /v1/Task/Update` |
 | Fechar Chamado | chamado com `flowup_task_id` | `PUT /v1/Task/Update` com o status configurado para "Fechado" |
 
-O banco é gravado **antes** da chamada à API. Se o FlowUp falhar, o chamado fica salvo, a mensagem de erro explica o motivo e basta salvar de novo para tentar outra vez. A decisão entre criar e atualizar olha só o `flowup_task_id`; até a versão 1.x ela olhava o responsável, o que impedia nova tentativa depois de uma falha (ver o histórico em [manutencao-e-problemas.md](manutencao-e-problemas.md#histórico-de-incidentes)).
+O banco é gravado **antes** da chamada à API. Se o FlowUp falhar, o chamado fica salvo, a mensagem de erro explica o motivo e basta salvar de novo para tentar outra vez. A decisão entre criar e atualizar olha só o `flowup_task_id`; até a versão 1.x ela olhava o responsável, o que impedia nova tentativa depois de uma falha (ver o histórico em [manutencao.md](manutencao.md#histórico-de-incidentes)).
 
 ### Dados enviados
 
@@ -147,10 +156,10 @@ Chamados gravados com os status antigos são convertidos ao abrir o programa (`d
 
 ## Log
 
-`configurar_log()` (em `config.py`) grava em `logs\AAAA-MM_<usuário>.log` na pasta de dados; se a rede não estiver acessível, usa `%TEMP%\chamados_logs`. Ficam registrados: a abertura do programa com a versão, cada chamada ao FlowUp com o código HTTP e o início da resposta, e qualquer erro, inclusive os que acontecem dentro das telas.
+`configurar_log()` (em `src/chamados/config.py`) grava em `logs\AAAA-MM_<usuário>.log` na pasta de dados; se a rede não estiver acessível, usa `%TEMP%\chamados_logs`. Ficam registrados: a abertura do programa com a versão, cada chamada ao FlowUp com o código HTTP e o início da resposta, e qualquer erro, inclusive os que acontecem dentro das telas.
 
 ## Limitações conhecidas
 
-- **SQLite em pasta de rede.** Funciona para o volume atual (dezenas de chamados por ano, poucas gravações simultâneas), mas o SQLite não foi feito para acesso concorrente por rede. Evite deixar o banco aberto no DB Browser enquanto a equipe usa o programa e mantenha backup ([manutencao-e-problemas.md](manutencao-e-problemas.md#backup)).
+- **SQLite em pasta de rede.** Funciona para o volume atual (dezenas de chamados por ano, poucas gravações simultâneas), mas o SQLite não foi feito para acesso concorrente por rede. Evite deixar o banco aberto no DB Browser enquanto a equipe usa o programa e mantenha backup ([manutencao.md](manutencao.md#backup)).
 - **Token legível por quem acessa o Z:.** O `config.json` precisa ser lido pelo exe de cada pessoa. Quem tem acesso à pasta consegue ver o token.
 - **Interface e rede na mesma linha de execução.** As chamadas ao FlowUp travam a janela por alguns segundos (no máximo `timeout_segundos`).

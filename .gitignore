@@ -1,26 +1,105 @@
-# Ambiente virtual e compilação (recriados a qualquer momento)
-venv/
-.venv/
-build/
-dist/
-__pycache__/
-*.pyc
+# =============================================================
+# .gitignore padrão dos repositórios da Cadari Engenharia
+# Tudo que está aqui nunca vai para o GitHub.
+# Para versionar um arquivo bloqueado, acrescente uma exceção no
+# final, começando com "!" (ex.: !data/tabela_grupos.csv).
+# =============================================================
 
-# Dados de produção e segredos: ficam só na pasta da rede, nunca no GitHub
-Banco de dados/
+# --- Segredos e configuração local ---------------------------
+# Token, senha e IDs ficam no config.json da pasta da rede.
+# O repositório leva só o config.example.json, sem valores.
 config.json
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+credenciais*
+secrets*
+
+# --- Dados de produção ----------------------------------------
 *.db
 *.db-journal
+*.sqlite
 logs/
-anexos/
 *.log
+anexos/
 
-# Arquivos do Windows e de editores
+# --- Dados de obra e de cliente -------------------------------
+# Modelos, exportações e entregáveis ficam na rede, nunca no Git.
+*.rvt
+*.rfa
+*.rte
+*.rft
+*.nwd
+*.nwc
+*.nwf
+*.dwg
+*.dxf
+*.ifc
+*.csv
+*.xlsx
+*.xlsm
+*.xls
+*.pdf
+*.zip
+*.rar
+*.7z
+
+# Modelos com relação de projetos, clientes e logos: só na rede
+data/modelos/*
+!data/modelos/README.md
+
+# Tabelas próprias do programa podem ser versionadas em data/
+!data/*.csv
+
+# --- Python ---------------------------------------------------
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- C# / .NET (add-ins do Revit) -----------------------------
+bin/
+obj/
+.vs/
+*.user
+*.suo
+TestResults/
+packages/
+
+# --- Build e executável ---------------------------------------
+# O executável vai anexado na Release do GitHub, não no código.
+build/
+dist/
+*.exe
+*.msi
+
+# --- Documentação gerada --------------------------------------
+docs/gerado/
+
+# --- Temporários do Office, do Windows e do Revit -------------
+~$*
+*.tmp
+*.bak
 Thumbs.db
 desktop.ini
+*.lnk
+*.[0-9][0-9][0-9][0-9].rvt
+*.[0-9][0-9][0-9][0-9].rfa
+
+# --- Editores -------------------------------------------------
 .vscode/
 .idea/
+*.swp
 
+# --- Exceções e acréscimos deste projeto -----------------------
+# Cópia local da pasta de dados usada em testes (banco, config.json com token,
+# lista da equipe). A pasta real fica na rede; esta nunca vai para o GitHub.
+Banco de dados/
 # Restos da versão 1.x (tinham token no código). Apague-os da pasta antes de publicar.
 Ver tarefa.py
 erros/
