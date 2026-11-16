@@ -60,7 +60,7 @@ Antes dela aparecem duas telas de carregamento: a do PyInstaller (imagem `assets
 ### Abrir Chamado (`AbrirChamadoWindow`)
 - Campos obrigatórios: nome, software e tema. Ferramenta, descrição e imagem são opcionais.
 - As categorias e os assuntos estão em `src/chamados/categorias.py` (ver [configuracao.md](configuracao.md#categorias-e-assuntos-do-formulário)).
-- A imagem anexada é copiada para `anexos\` na pasta de dados com o nome `<protocolo>_<nome original>`. No banco fica o caminho relativo (`anexos\C034_print.png`).
+- A imagem anexada é copiada para `saida\anexos\` na pasta de dados com o nome `<protocolo>_<nome original>`. No banco fica o caminho relativo (`anexos\C034_print.png`).
 
 ### Acompanhar Chamado (`AcompanharChamadoWindow`)
 - Busca pelo protocolo e mostra o resumo, a imagem (clique abre no visualizador do Windows) e os campos de triagem: designado por, responsável, data de entrega, status e observações.
@@ -75,16 +75,17 @@ Lista com filtros por status, software, solicitante e responsável, botão "Ver 
 
 ### Pasta de dados
 
-Padrão: `Z:\Biblioteca\Padronização\Cadari\Processos BIM\Formulário de bugs\Banco de dados` (definido em `src/chamados/config.py`, pode ser trocado pela variável `CHAMADOS_PASTA_DADOS`).
+Padrão: `Z:\Desenvolvimento\Dados\Chamados` (definido em `src/chamados/config.py`, pode ser trocado pela variável `CHAMADOS_PASTA_DADOS`). A pasta `Z:\Desenvolvimento\Dados` reúne os dados de vários programas, um por subpasta. Dentro da pasta do Chamados, o que alimenta o programa fica separado do que ele produz:
 
 | Item | Conteúdo |
 |---|---|
-| `chamados.db` | Banco SQLite com todos os chamados |
-| `nomes_equipe.csv` | Pessoas que aparecem nas listas e o ID de cada uma no FlowUp |
-| `config.json` | Token e IDs do FlowUp |
-| `anexos\` | Imagens anexadas aos chamados (criada no primeiro anexo) |
-| `logs\` | Um arquivo por usuário e mês, `AAAA-MM_<usuário do Windows>.log` |
-| `icone.ico`, `Tela abertura.png` | Restos da versão 1.x: o exe antigo lê o `icone.ico` daqui e a compilação antiga usava os dois. As cópias atuais estão em `assets/`. Podem ser apagados quando todos estiverem na 2.0 |
+| `entrada\config.json` | Token e IDs do FlowUp (confidencial) |
+| `entrada\nomes_equipe.csv` | Pessoas que aparecem nas listas e o ID de cada uma no FlowUp (o programa atualiza pelo FlowUp) |
+| `saida\chamados.db` | Banco SQLite com todos os chamados |
+| `saida\anexos\` | Imagens anexadas aos chamados (criada no primeiro anexo) |
+| `saida\logs\` | Um arquivo por usuário e mês, `AAAA-MM_<usuário do Windows>.log` |
+
+No banco, o caminho do anexo fica relativo à pasta `saida` (`anexos\C034_print.png`).
 
 ### Tabela `chamados`
 

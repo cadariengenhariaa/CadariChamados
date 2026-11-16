@@ -7,8 +7,10 @@ Tudo o que muda de ambiente para ambiente, ou ao longo do tempo, fica fora do c�
 Definida em `src/chamados/config.py`:
 
 ```python
-PASTA_DADOS_PADRAO = r"Z:\Biblioteca\Padronização\Cadari\Processos BIM\Formulário de bugs\Banco de dados"
+PASTA_DADOS_PADRAO = r"Z:\Desenvolvimento\Dados\Chamados"
 ```
+
+Dentro dela ficam `entrada\` (`config.json` e `nomes_equipe.csv`, o que alimenta o programa) e `saida\` (`chamados.db`, `anexos\` e `logs\`, o que o programa produz). Para testes, crie as duas subpastas na pasta local.
 
 Se a pasta mudar de lugar na rede, altere essa linha, recompile e distribua o exe novo. Para testes, a variável de ambiente `CHAMADOS_PASTA_DADOS` substitui o padrão sem mexer no código.
 
@@ -19,7 +21,7 @@ Se a pasta mudar de lugar na rede, altere essa linha, recompile e distribua o ex
 
 ## config.json
 
-Fica na pasta de dados e **não vai para o GitHub**. O modelo está em `config.example.json` na raiz do repositório, com o token vazio (token vazio = integração desligada).
+Fica em `entrada\` na pasta de dados e **não vai para o GitHub**. O modelo está em `config.example.json` na raiz do repositório, com o token vazio (token vazio = integração desligada).
 
 ```json
 {

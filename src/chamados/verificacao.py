@@ -16,7 +16,7 @@ import sys
 import time
 from dataclasses import dataclass
 
-from chamados.config import ARQUIVO_BANCO, ARQUIVO_CONFIG, ARQUIVO_EQUIPE, PASTA_DADOS, VERSAO, carregar_config_flowup, usuario_atual
+from chamados.config import ARQUIVO_BANCO, ARQUIVO_CONFIG, ARQUIVO_EQUIPE, PASTA_DADOS, PASTA_SAIDA, VERSAO, carregar_config_flowup, usuario_atual
 
 OK, AVISO, ERRO = "OK", "AVISO", "ERRO"
 TIMEOUT_REDE = 8  # segundos; na abertura não vale a pena esperar mais que isso pelo FlowUp
@@ -51,11 +51,12 @@ def pasta_dados():
         return Item("Pasta da rede", ERRO, f"A unidade {unidade} não está conectada neste computador.",
                     "Mapear o drive Z: (ou reconectar a VPN) e abrir o programa de novo.")
     return Item("Pasta da rede", ERRO, f"Pasta não encontrada ou sem acesso: {PASTA_DADOS}",
-                "Pedir ao TI acesso à pasta Banco de dados do Formulário de bugs.")
+                "Pedir ao TI acesso à pasta Z:\\Desenvolvimento\\Dados\\Chamados.")
 
 
 def gravacao():
-    teste = os.path.join(PASTA_DADOS, f".teste_{usuario_atual()}.tmp")
+    pasta = PASTA_SAIDA if os.path.isdir(PASTA_SAIDA) else PASTA_DADOS
+    teste = os.path.join(pasta, f".teste_{usuario_atual()}.tmp")
     try:
         with open(teste, "w", encoding="utf-8") as f:
             f.write("ok")
@@ -63,7 +64,7 @@ def gravacao():
         return Item("Permissão de gravação", OK, "O usuário consegue gravar na pasta de dados.")
     except OSError as e:
         return Item("Permissão de gravação", ERRO, f"Sem permissão para gravar na pasta de dados ({e}).",
-                    "Pedir ao TI permissão de leitura e gravação na pasta Banco de dados.")
+                    "Pedir ao TI permissão de leitura e gravação na subpasta saida de Z:\\Desenvolvimento\\Dados\\Chamados.")
 
 
 def banco():

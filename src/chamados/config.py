@@ -24,18 +24,24 @@ VERSAO = __version__  # a versão fica só em chamados/__init__.py
 # ---------------------------------------------------------------------------
 # Pasta de dados compartilhada
 # ---------------------------------------------------------------------------
-# Guarda o banco (chamados.db), a lista da equipe (nomes_equipe.csv), o
-# config.json, os anexos e os logs. Fica na rede e NUNCA vai para o GitHub.
-# Para testar sem mexer na produção, defina a variável de ambiente
-# CHAMADOS_PASTA_DADOS com uma pasta local (ver docs/desenvolvimento.md).
-PASTA_DADOS_PADRAO = r"Z:\Biblioteca\Padronização\Cadari\Processos BIM\Formulário de bugs\Banco de dados"
+# Cada programa tem uma pasta própria dentro de Z:\Desenvolvimento\Dados e, dentro
+# dela, os dados ficam separados em duas subpastas:
+#   entrada\  o que alimenta o programa (config.json, nomes_equipe.csv)
+#   saida\    o que o programa produz (chamados.db, anexos\, logs\)
+# Fica na rede e NUNCA vai para o GitHub. Para testar sem mexer na produção,
+# defina a variável de ambiente CHAMADOS_PASTA_DADOS com uma pasta local
+# (ver docs/desenvolvimento.md).
+PASTA_DADOS_PADRAO = r"Z:\Desenvolvimento\Dados\Chamados"
 PASTA_DADOS = os.environ.get("CHAMADOS_PASTA_DADOS") or PASTA_DADOS_PADRAO
 
-ARQUIVO_BANCO = os.path.join(PASTA_DADOS, "chamados.db")
-ARQUIVO_EQUIPE = os.path.join(PASTA_DADOS, "nomes_equipe.csv")
-ARQUIVO_CONFIG = os.path.join(PASTA_DADOS, "config.json")
-PASTA_ANEXOS = os.path.join(PASTA_DADOS, "anexos")
-PASTA_LOGS = os.path.join(PASTA_DADOS, "logs")
+PASTA_ENTRADA = os.path.join(PASTA_DADOS, "entrada")
+PASTA_SAIDA = os.path.join(PASTA_DADOS, "saida")
+
+ARQUIVO_CONFIG = os.path.join(PASTA_ENTRADA, "config.json")
+ARQUIVO_EQUIPE = os.path.join(PASTA_ENTRADA, "nomes_equipe.csv")
+ARQUIVO_BANCO = os.path.join(PASTA_SAIDA, "chamados.db")
+PASTA_ANEXOS = os.path.join(PASTA_SAIDA, "anexos")
+PASTA_LOGS = os.path.join(PASTA_SAIDA, "logs")
 
 
 # Raiz do repositório (src/chamados/config.py -> três níveis acima). No exe, o
@@ -54,12 +60,12 @@ def recurso(*partes):
 
 
 def resolver_caminho_dados(caminho):
-    """Converte um caminho relativo salvo no banco (ex.: anexos/C001_print.png) em caminho absoluto."""
+    """Converte um caminho relativo salvo no banco (ex.: anexos/C001_print.png) em caminho absoluto dentro de saida."""
     if not caminho:
         return caminho
     if os.path.isabs(caminho):
         return caminho
-    return os.path.join(PASTA_DADOS, caminho)
+    return os.path.join(PASTA_SAIDA, caminho)
 
 
 # ---------------------------------------------------------------------------

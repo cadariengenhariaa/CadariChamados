@@ -43,7 +43,7 @@ Quando o programa não abre direito em uma máquina, use o botão **Verificar co
 
 | Item | Erro ou aviso significa |
 |---|---|
-| Pasta da rede | Drive Z: não mapeado, VPN desconectada ou sem acesso à pasta `Banco de dados` (o programa não funciona) |
+| Pasta da rede | Drive Z: não mapeado, VPN desconectada ou sem acesso à pasta `Z:\Desenvolvimento\Dados\Chamados` (o programa não funciona) |
 | Permissão de gravação | Usuário sem permissão de gravação na pasta de dados (o programa não funciona) |
 | Banco de chamados | Banco ausente ou travado (por exemplo, aberto no DB Browser) |
 | Lista da equipe | `nomes_equipe.csv` ausente ou ilegível |
@@ -67,7 +67,7 @@ O botão "Copiar relatório" copia o resultado para colar num chamado de Suporte
 | Lista de nomes mostra "ERRO: Verifique a Rede Z:" ou "Equipe Vazia" | `nomes_equipe.csv` ausente, com colunas erradas ou salvo em outro formato | Conferir o arquivo: colunas `Id,Name,Email`, separador vírgula, UTF-8 |
 | "database is locked" no log | Gravação simultânea ou banco aberto no DB Browser com alterações não gravadas | Fechar o DB Browser e tentar de novo |
 | Chamado designado e sem tarefa | Falha na criação (rede, token, API) | Abrir o chamado e salvar de novo. Desde a 2.0 isso cria a tarefa |
-| Imagem de chamado antigo não aparece | Na 1.x as imagens iam para uma pasta temporária e se perdiam ao fechar o programa | Não há como recuperar. Os anexos da 2.0 ficam em `Banco de dados\anexos` |
+| Imagem de chamado antigo não aparece | Na 1.x as imagens iam para uma pasta temporária e se perdiam ao fechar o programa | Não há como recuperar. Os anexos ficam em `saida\anexos` |
 | Mudanças feitas no FlowUp não aparecem no programa | A integração só envia, não lê de volta | Comportamento esperado ([arquitetura.md](arquitetura.md#o-que-a-integração-não-faz)) |
 
 ## Recriar ou vincular tarefa
@@ -83,7 +83,7 @@ Veja abaixo como executar comandos no banco com segurança.
 
 ## Logs
 
-Ficam em `Banco de dados\logs`, um arquivo por usuário do Windows e por mês: `2026-10_henrique.viana.log`. Se a rede estiver fora, o programa grava em `%TEMP%\chamados_logs` da máquina da pessoa.
+Ficam em `saida\logs`, um arquivo por usuário do Windows e por mês: `2026-10_henrique.viana.log`. Se a rede estiver fora, o programa grava em `%TEMP%\chamados_logs` da máquina da pessoa.
 
 O que procurar:
 
@@ -98,7 +98,7 @@ Linhas `ERROR` e `CRITICAL` trazem o detalhe técnico do erro. Logs de meses ant
 
 ## Banco de dados
 
-O banco é um arquivo SQLite (`Banco de dados\chamados.db`). Para consultar ou corrigir dados, use o **DB Browser for SQLite** (https://sqlitebrowser.org/dl/, instalador para Windows 64 bits).
+O banco é um arquivo SQLite (`saida\chamados.db`). Para consultar ou corrigir dados, use o **DB Browser for SQLite** (https://sqlitebrowser.org/dl/, instalador para Windows 64 bits).
 
 Para só consultar, abra com "Open Database Read Only". Para corrigir:
 
@@ -127,7 +127,7 @@ Nunca apague o `chamados.db` e não substitua o arquivo por uma cópia antiga se
 
 Não há backup automático feito pelo programa. Recomendação mínima:
 
-- copiar o `chamados.db` antes de cada versão nova e uma vez por mês para `Banco de dados\backup\chamados_AAAA-MM-DD.db`;
+- copiar o `chamados.db` antes de cada versão nova e uma vez por mês para `saida\backup\chamados_AAAA-MM-DD.db`;
 - confirmar com a TI se a pasta do Z: entra no backup da rede.
 
 O `nomes_equipe.csv` e o `config.json` mudam pouco, mas entram na mesma cópia.
