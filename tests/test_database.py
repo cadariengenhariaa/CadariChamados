@@ -32,7 +32,7 @@ class TestBanco(unittest.TestCase):
 
     def test_caminho_relativo_de_anexo_aponta_para_a_pasta_de_dados(self):
         caminho = config.resolver_caminho_dados(os.path.join("anexos", "C001_print.png"))
-        self.assertEqual(caminho, os.path.join(PASTA_TESTE, "anexos", "C001_print.png"))
+        self.assertEqual(caminho, os.path.join(PASTA_TESTE, "saida", "anexos", "C001_print.png"))
 
 if __name__ == "__main__":
     unittest.main()

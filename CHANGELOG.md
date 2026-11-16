@@ -2,6 +2,18 @@
 
 Formato: a versão mais nova primeiro. Cada versão distribuída deve ter uma entrada aqui e o mesmo número em `__version__` no `src/chamados/__init__.py`.
 
+## 2.4.0 (novembro de 2026)
+
+### Alterado
+- Os dados passaram para `Z:\Desenvolvimento\Dados\Chamados`, a pasta que reúne os dados dos programas internos. Dentro dela, o que alimenta o programa fica em `entrada\` (`config.json`, `nomes_equipe.csv`) e o que ele produz fica em `saida\` (`chamados.db`, `anexos\`, `logs\`).
+- O executável passou a ser distribuído em `Z:\Biblioteca\Padronização\Cadari\Executaveis`, pasta que toda a equipe acessa. O programa não depende do lugar do exe.
+- Pacote da Release passou a se chamar `CadariChamados-vX.Y.Z.zip` (o repositório se chama CadariChamados).
+- Mensagens da verificação do computador apontam para a nova pasta.
+
+### Migração
+- Exe 2.3.x procura os dados no caminho antigo e não funciona mais: todos precisam do exe 2.4.0.
+- Os dados existentes foram copiados da pasta antiga; nada foi apagado nela.
+
 ## 2.3.1 (novembro de 2026)
 
 ### Alterado

@@ -26,6 +26,15 @@ class TestConfig(unittest.TestCase):
     def test_pasta_de_dados_vem_da_variavel_de_ambiente(self):
         self.assertEqual(config.PASTA_DADOS, PASTA_TESTE)
 
+    def test_dados_separados_em_entrada_e_saida(self):
+        entrada = os.path.join(PASTA_TESTE, "entrada")
+        saida = os.path.join(PASTA_TESTE, "saida")
+        self.assertEqual(os.path.dirname(config.ARQUIVO_CONFIG), entrada)
+        self.assertEqual(os.path.dirname(config.ARQUIVO_EQUIPE), entrada)
+        self.assertEqual(os.path.dirname(config.ARQUIVO_BANCO), saida)
+        self.assertEqual(os.path.dirname(config.PASTA_ANEXOS), saida)
+        self.assertEqual(os.path.dirname(config.PASTA_LOGS), saida)
+
     def test_sem_config_json_usa_padroes_sem_token(self):
         cfg = config.carregar_config_flowup()
         self.assertEqual(cfg["token"], "")

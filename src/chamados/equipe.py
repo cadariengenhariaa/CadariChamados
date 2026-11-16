@@ -82,6 +82,7 @@ def gravar_csv(lista, arquivo=ARQUIVO_EQUIPE):
     w.writeheader()
     for p in lista:
         w.writerow({"Id": p["Id"], "Name": p["Name"], "Email": p["Email"]})
+    os.makedirs(os.path.dirname(arquivo), exist_ok=True)
     temporario = arquivo + ".tmp"
     with open(temporario, "w", encoding="utf-8-sig", newline="") as f:
         f.write(buf.getvalue())

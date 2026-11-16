@@ -62,8 +62,8 @@ cobertura: $(PY)
 
 executavel: $(PY)
 	$(PY) -m PyInstaller --noconfirm --clean --distpath dist --workpath build scripts/abertura_de_chamados.spec
-	cd dist && zip -q "FormularioBugs-v$(VERSAO).zip" "$(NOME)"
-	@echo "Pronto: dist/$(NOME) e dist/FormularioBugs-v$(VERSAO).zip"
+	cd dist && zip -q "CadariChamados-v$(VERSAO).zip" "$(NOME)"
+	@echo "Pronto: dist/$(NOME) e dist/CadariChamados-v$(VERSAO).zip"
 
 diagnostico: $(PY)
 	$(PY) -m chamados.diagnostico_flowup $(ARGS)

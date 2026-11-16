@@ -49,7 +49,7 @@ Todos os usuários trabalham sobre os mesmos dados, que ficam numa pasta da rede
 
 Esta seção é para quem só usa o programa. Não precisa instalar Python nem Git.
 
-1. Abra **Abertura de Chamados** pelo atalho da área de trabalho ou pela pasta `Z:\Biblioteca\Padronização\Cadari\Processos BIM\Formulário de bugs`.
+1. Abra **Abertura de Chamados** pelo atalho da área de trabalho ou pela pasta `Z:\Biblioteca\Padronização\Cadari\Executaveis`.
 2. Espere a tela de carregamento terminar. Se aparecer a janela de verificação com algum erro, siga a dica mostrada ao lado do item.
 3. Na aba **Novo chamado**, preencha seu nome, a categoria, o assunto, o tema e a descrição. Se quiser, anexe um print pelo botão **Anexar imagem**.
 4. Clique em **Registrar chamado** e anote o protocolo que aparece.
@@ -101,15 +101,15 @@ Esta seção é para quem vai alterar o código.
 | Windows 10 ou 11 | |
 | Python 3.12, instalado com a opção "Add python.exe to PATH" | no terminal: `py -3.12 --version` |
 | Git ou GitHub Desktop | no terminal: `git --version` |
-| Acesso ao drive Z: | abrir `Z:\Biblioteca\Padronização\Cadari\Processos BIM\Formulário de bugs` no Explorer |
+| Acesso ao drive Z: | abrir `Z:\Desenvolvimento\Dados\Chamados` no Explorer |
 
 **Passo a passo**
 
 1. Baixe o repositório. No terminal, dentro da pasta onde você guarda projetos:
 
    ```bat
-   git clone https://github.com/cadariengenhariaa/FormularioBugs.git
-   cd FormularioBugs
+   git clone https://github.com/cadariengenhariaa/CadariChamados.git
+   cd CadariChamados
    ```
 
 2. Rode os testes. Na primeira vez, o comando cria o ambiente virtual e instala as bibliotecas (leva alguns minutos):
@@ -153,14 +153,14 @@ O diagnóstico aceita `--tarefa 51808` (mostra uma tarefa do FlowUp) e `--gerar-
 
 1. Confira se a versão em `src\chamados\__init__.py` e a primeira entrada do `CHANGELOG.md` são a mesma.
 2. Rode `scripts\gerar_executavel.bat`.
-3. O programa sai em `dist\Abertura de Chamados.exe` (um arquivo único) e o pacote para a Release em `dist\FormularioBugs-vX.Y.Z.zip`.
+3. O programa sai em `dist\Abertura de Chamados.exe` (um arquivo único) e o pacote para a Release em `dist\CadariChamados-vX.Y.Z.zip`.
 4. Teste o executável com uma cópia dos dados.
-5. Anexe o `.zip` na Release do GitHub e copie o `.exe` para a rede. Passo a passo da distribuição em [docs/desenvolvimento.md](docs/desenvolvimento.md#distribuir-para-a-equipe).
+5. Anexe o `.zip` na Release do GitHub e copie o `.exe` para `Z:\Biblioteca\Padronização\Cadari\Executaveis`. Passo a passo da distribuição em [docs/desenvolvimento.md](docs/desenvolvimento.md#distribuir-para-a-equipe).
 
 ## Estrutura do repositório
 
 ```
-FormularioBugs/
+CadariChamados/
 ├── src/
 │   └── chamados/                   # código do programa
 │       ├── __init__.py             # versão (__version__)
@@ -195,8 +195,9 @@ FormularioBugs/
 | O quê | Onde | Vai para o GitHub? |
 |---|---|---|
 | Código, imagens, testes e documentação | este repositório | Sim |
-| Banco de chamados (`chamados.db`), lista da equipe (`nomes_equipe.csv`), `config.json` com o token do FlowUp, anexos e logs | `Z:\Biblioteca\Padronização\Cadari\Processos BIM\Formulário de bugs\Banco de dados` | **Não, nunca** |
-| Executável usado pela equipe | gerado em `dist\` e copiado para a rede | Não (vai anexado na Release) |
+| O que alimenta o programa: `config.json` (token do FlowUp) e lista da equipe (`nomes_equipe.csv`) | `Z:\Desenvolvimento\Dados\Chamados\entrada` | **Não, nunca** |
+| O que o programa produz: banco de chamados (`chamados.db`), anexos e logs | `Z:\Desenvolvimento\Dados\Chamados\saida` | **Não, nunca** |
+| Executável usado pela equipe | `Z:\Biblioteca\Padronização\Cadari\Executaveis` (gerado em `dist\`) | Não (vai anexado na Release) |
 
 ## Como contribuir
 

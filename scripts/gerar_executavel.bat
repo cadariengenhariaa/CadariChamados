@@ -18,10 +18,10 @@ if errorlevel 1 (
     exit /b 1
 )
 
-powershell -NoProfile -Command "Compress-Archive -Path 'dist\Abertura de Chamados.exe' -DestinationPath 'dist\FormularioBugs-v%VERSAO%.zip' -Force"
+powershell -NoProfile -Command "Compress-Archive -Path 'dist\Abertura de Chamados.exe' -DestinationPath 'dist\CadariChamados-v%VERSAO%.zip' -Force"
 if errorlevel 1 exit /b 1
 
 echo.
 echo Pronto:
 echo   dist\Abertura de Chamados.exe          (copiar para a rede)
-echo   dist\FormularioBugs-v%VERSAO%.zip       (anexar na Release do GitHub)
+echo   dist\CadariChamados-v%VERSAO%.zip       (anexar na Release do GitHub)

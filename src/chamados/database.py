@@ -1,7 +1,7 @@
 """
 Acesso ao banco SQLite dos chamados.
 
-O arquivo chamados.db fica na pasta de dados compartilhada (config.PASTA_DADOS),
+O arquivo chamados.db fica na pasta de dados compartilhada (config.PASTA_SAIDA),
 usada ao mesmo tempo por todos que abrem o programa. Estrutura da tabela e
 cuidados de manutenção: docs/arquitetura.md e docs/manutencao-e-problemas.md.
 """
@@ -12,7 +12,7 @@ import sqlite3
 
 import pendulum
 
-from chamados.config import ARQUIVO_BANCO, PASTA_DADOS
+from chamados.config import ARQUIVO_BANCO, PASTA_SAIDA
 
 # Mantido por compatibilidade com scripts antigos que importavam DB_FILE.
 DB_FILE = ARQUIVO_BANCO
@@ -44,8 +44,8 @@ def converter_para_brasil(data_str):
 
 
 def criar_tabela():
-    """Cria a pasta de dados e a tabela de chamados, se ainda não existirem."""
-    os.makedirs(PASTA_DADOS, exist_ok=True)
+    """Cria a pasta de saída e a tabela de chamados, se ainda não existirem."""
+    os.makedirs(PASTA_SAIDA, exist_ok=True)
     logging.info("Banco de dados em uso: %s", ARQUIVO_BANCO)
 
     conn = sqlite3.connect(ARQUIVO_BANCO)
