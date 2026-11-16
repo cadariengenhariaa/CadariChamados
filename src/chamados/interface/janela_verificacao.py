@@ -37,7 +37,7 @@ class JanelaVerificacao(customtkinter.CTkToplevel):
             tema.rotulo(lista, texto, 10, "texto", wraplength=540).grid(row=linha, column=1, sticky="w", pady=6)
         acoes = customtkinter.CTkFrame(self, fg_color="transparent")
         acoes.pack(fill="x", padx=24, pady=(0, 18))
-        tema.botao(acoes, "Copiar relatório", self.copiar, width=150).pack(side="left")
+        tema.botao(acoes, "Copiar relatório", self.copiar, width=170).pack(side="left")
         tema.botao(acoes, "Fechar", self.destroy, tipo="secundario", width=100).pack(side="left", padx=10)
         self.copiado = tema.rotulo(acoes, "", 9)
         self.copiado.pack(side="left", padx=8)

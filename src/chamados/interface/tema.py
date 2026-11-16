@@ -55,6 +55,9 @@ COR = {
 
 ZOOM_MIN, ZOOM_MAX = 0.8, 1.6
 
+# Acréscimo, em pixels, a todos os tamanhos de fonte da interface (textos mais fáceis de ler).
+AUMENTO_FONTE = 2
+
 # Geometria do check da Cadari, medida no arquivo da marca (arquivo Cadari3.png da identidade visual).
 # Coordenadas proporcionais à altura do check (altura = 1, largura = 0,92).
 CHECK_PERNA_ESQUERDA = ((0.0, 0.50), (0.26, 0.50), (0.35, 0.72), (0.227, 1.0))   # dourado secundário
@@ -115,7 +118,7 @@ def familia():
 
 def fonte(tamanho=11, peso="normal"):
     """Fonte dos componentes CustomTkinter (o zoom já é aplicado pelo próprio CustomTkinter)."""
-    return customtkinter.CTkFont(family=familia(), size=tamanho, weight=peso)
+    return customtkinter.CTkFont(family=familia(), size=tamanho + AUMENTO_FONTE, weight=peso)
 
 
 def fator():
@@ -126,11 +129,14 @@ def fator():
         return escala
 
 
-def fonte_tk(tamanho=11, peso="normal"):
+def fonte_tk(tamanho=11, peso="normal", ampliar=True):
     """
     Fonte para widgets Tk/ttk comuns (tabela, calendário, títulos desenhados).
     Tamanho em pixels, como o CustomTkinter, para os textos ficarem iguais aos dos outros campos.
+    ampliar=False ignora o AUMENTO_FONTE (usado nos títulos, que têm altura fixa).
     """
+    if ampliar:
+        tamanho += AUMENTO_FONTE
     return (familia(), -max(8, round(tamanho * fator())), peso)
 
 
@@ -318,7 +324,7 @@ class TituloSecao(tk.Canvas):
         self.delete("all")
         h = round(self.ALTURA * fator())
         self.configure(bg=cor(self.fundo), height=h)
-        f = fonte_tk(19, "bold")
+        f = fonte_tk(19, "bold", ampliar=False)
         x_texto = round(1.2 * h)
         largura = max(round(5.04 * h), x_texto + tkfont.Font(font=f).measure(self.texto.upper()) + round(0.6 * h))
         if not escuro():
@@ -355,7 +361,7 @@ def estilizar_ttk(raiz):
     st.theme_use("clam")
     st.configure(".", font=fonte_tk(12))  # cabeçalhos do calendário e demais textos ttk
     st.configure("Cadari.Treeview", background=cor("fundo"), fieldbackground=cor("fundo"),
-                 foreground=cor("texto"), rowheight=round(30 * fator()), borderwidth=0, font=fonte_tk(13))
+                 foreground=cor("texto"), rowheight=round(34 * fator()), borderwidth=0, font=fonte_tk(13))
     st.map("Cadari.Treeview", background=[("selected", cor("selecao"))], foreground=[("selected", cor("texto"))])
     st.configure("Cadari.Treeview.Heading", background=cor("painel"), foreground=cor("texto"),
                  relief="flat", borderwidth=0, font=fonte_tk(13, "bold"))

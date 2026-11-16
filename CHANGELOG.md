@@ -2,6 +2,21 @@
 
 Formato: a versão mais nova primeiro. Cada versão distribuída deve ter uma entrada aqui e o mesmo número em `__version__` no `src/chamados/__init__.py`.
 
+## 2.3.3 (novembro de 2026)
+
+### Adicionado
+- Campo **Urgência** (Baixa, Média, Alta, Urgente) no novo chamado e nos detalhes do chamado. Vai para a prioridade da tarefa no FlowUp. Chamados abertos antes ficam sem urgência e não enviam prioridade.
+- Assunto "Download de disciplinas complementares" na categoria Revit (chamado C052).
+
+### Corrigido
+- Ao mudar o zoom, a tela escondida reaparecia por cima da aba aberta e a janela parecia trocar de aba sozinha. Agora a aba ativa é reposta depois de cada mudança de zoom.
+
+### Alterado
+- Fontes da interface 2 pixels maiores (menus, campos, botões, tabela e calendário) e linhas da tabela mais altas.
+- Em Novo chamado, **Data de entrega**, **Status inicial** e **Urgência** ficam na mesma linha; nos detalhes do chamado, Status e Urgência ficam lado a lado.
+- O banco ganha a coluna `urgencia` sozinho na primeira abertura da 2.3.3 (os exes anteriores continuam funcionando com ela).
+- Janela inicial maior (até 1480 x 920, sem passar do tamanho da tela) e botões mais largos para caber o texto maior.
+
 ## 2.3.2 (novembro de 2026)
 
 ### Alterado
