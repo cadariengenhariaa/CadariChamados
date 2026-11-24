@@ -11,6 +11,7 @@ Formato: a versão mais nova primeiro. Cada versão distribuída deve ter uma en
 - No ambiente de Testes, faixa laranja "AMBIENTE DE TESTES" no topo, `[TESTES]` no título e aviso na tela de carregamento.
 - Trava na abertura: o programa não abre se o ambiente do exe, a pasta de dados e o `config.json` (campo novo `"ambiente"`) não combinarem, nem se o Testes estiver com o quadro de Produção.
 - Item "Ambiente" na verificação do computador e no diagnóstico.
+- Em Testes, os chamados novos ganham `[TESTE]` no começo do tema e as tarefas do FlowUp, no começo do título.
 - `scripts\atualizar_testes.bat`: copia banco, anexos e lista da equipe de Produção para Testes, apagando na cópia os vínculos com as tarefas do FlowUp.
 
 ### Alterado

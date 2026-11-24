@@ -12,7 +12,7 @@ import sqlite3
 
 import pendulum
 
-from chamados.config import ARQUIVO_BANCO, PASTA_SAIDA
+from chamados.config import ARQUIVO_BANCO, PASTA_SAIDA, marcar_teste
 
 # Mantido por compatibilidade com scripts antigos que importavam DB_FILE.
 DB_FILE = ARQUIVO_BANCO
@@ -95,7 +95,11 @@ def criar_tabela():
 
 
 def registrar_chamado_db(nome, software, ferramenta, tema, descricao, caminho_imagem=None, urgencia=None):
-    """Insere um novo chamado e devolve o protocolo gerado (C001, C002...) ou None."""
+    """Insere um novo chamado e devolve o protocolo gerado (C001, C002...) ou None.
+
+    No ambiente de Testes, o tema (título do chamado) ganha "[TESTE] " no começo.
+    """
+    tema = marcar_teste(tema)
     conn = None
     try:
         conn = sqlite3.connect(ARQUIVO_BANCO)

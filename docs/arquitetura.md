@@ -35,7 +35,7 @@ flowchart LR
 | `src/chamados/database.py` | Todas as consultas ao SQLite. Nenhum outro módulo escreve SQL. |
 | `src/chamados/equipe.py` | Sincroniza o `nomes_equipe.csv` com os usuários ativos do FlowUp a cada abertura. |
 | `src/chamados/flowup_api.py` | Chamadas HTTP ao FlowUp. Trata redirecionamento, token recusado e falta de conexão e devolve mensagens curtas. |
-| `src/chamados/servico.py` | Regras da integração: montar os dados, criar ou atualizar a tarefa, excluir chamado e tarefa. |
+| `src/chamados/servico.py` | Regras da integração: montar os dados (título com `[TESTE]` no ambiente de Testes), criar ou atualizar a tarefa, excluir chamado e tarefa. |
 | `src/chamados/verificacao.py` | Verificação do computador: ambiente, pasta da rede, gravação, banco, lista da equipe, configuração e conexão com o FlowUp. |
 | `src/chamados/interface/app.py` | Janela principal: carregamento em segundo plano, topo com abas, tema escuro, zoom e botão "Verificar computador". |
 | `src/chamados/interface/carregamento.py` | Tela de carregamento com a barra de progresso. |

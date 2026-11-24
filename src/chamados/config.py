@@ -65,6 +65,21 @@ AMBIENTE = escolher_ambiente()
 NOME_AMBIENTE = AMBIENTES[AMBIENTE]["nome"]
 EM_TESTES = AMBIENTE == "testes"
 
+MARCA_TESTE = "[TESTE]"  # vai no título dos chamados e das tarefas criados no ambiente de Testes
+
+
+def marcar_teste(titulo, em_testes=None):
+    """
+    Põe "[TESTE] " no começo do título quando o programa está no ambiente de Testes.
+    Não repete a marca se ela já estiver lá. Em Produção, devolve o título como veio.
+    """
+    if not (EM_TESTES if em_testes is None else em_testes):
+        return titulo
+    texto = str(titulo or "").strip()
+    if texto.upper().startswith(MARCA_TESTE):
+        return texto
+    return f"{MARCA_TESTE} {texto}".strip()
+
 # ---------------------------------------------------------------------------
 # Pasta de dados compartilhada
 # ---------------------------------------------------------------------------

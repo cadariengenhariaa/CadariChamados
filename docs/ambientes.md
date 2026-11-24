@@ -16,8 +16,12 @@ O programa tem dois ambientes. Toda alteração é desenvolvida e validada em **
 | Onde fica o exe | `Z:\Biblioteca\Padronização\Cadari\Executaveis\Testes` | `Z:\Biblioteca\Padronização\Cadari\Executaveis` |
 | Branch de origem | `develop` | `main` |
 | Como reconhecer na tela | faixa laranja "AMBIENTE DE TESTES" e `[TESTES]` no título | sem faixa |
+| Título do chamado | `[TESTE] <tema>` nos chamados abertos em Testes | `<tema>` |
+| Título da tarefa no FlowUp | `[TESTE] Chamado C058 - <tema>` | `Chamado C058 - <tema>` |
 
 O token do FlowUp é o mesmo nos dois `config.json` (é uma só instância do FlowUp). O que separa as tarefas é o quadro.
+
+Em Testes, todo chamado aberto ganha `[TESTE]` no começo do tema, e toda tarefa criada ou atualizada ganha `[TESTE]` no começo do título (inclusive a de um chamado copiado de Produção). Assim, um chamado ou tarefa de teste é reconhecido em qualquer lista, relatório ou notificação. Em Produção nada muda.
 
 ## Como o programa sabe em qual ambiente está
 
@@ -81,7 +85,8 @@ Antes de pedir o PR para a `main`, com o exe de Testes:
 - [ ] a faixa "AMBIENTE DE TESTES" aparece e a versão no título é a nova;
 - [ ] **Verificar computador** sem ERRO;
 - [ ] abrir um chamado com imagem;
-- [ ] designar o chamado e conferir a tarefa criada no quadro TESTES GERAL do FlowUp;
+- [ ] o chamado aparece na lista com `[TESTE]` no tema;
+- [ ] designar o chamado e conferir a tarefa criada no quadro TESTES GERAL do FlowUp, com `[TESTE]` no título;
 - [ ] alterar status e urgência e conferir a tarefa atualizada (a urgência vira a prioridade da tarefa);
 - [ ] filtrar a lista e exportar CSV;
 - [ ] finalizar e excluir o chamado de teste (a tarefa some do quadro);
