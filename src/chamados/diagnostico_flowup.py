@@ -10,7 +10,8 @@ Uso, na pasta do projeto:
     scripts\\diagnosticar_flowup.bat --gerar-token    gera um token novo (pede a senha da API)
 
 O .bat equivale a "python -m chamados.diagnostico_flowup", com src no PYTHONPATH.
-Lê a mesma pasta de dados do programa (variável CHAMADOS_PASTA_DADOS ou o padrão do config.py).
+Lê a pasta de dados do ambiente escolhido: Testes, por padrão. Para conferir Produção,
+rode antes "set CHAMADOS_AMBIENTE=producao" (ver docs/ambientes.md).
 Explicação de cada verificação: docs/manutencao.md
 """
 
@@ -24,7 +25,8 @@ import unicodedata
 
 import requests
 
-from chamados.config import ARQUIVO_BANCO, ARQUIVO_CONFIG, ARQUIVO_EQUIPE, PASTA_DADOS, carregar_config_flowup
+from chamados.config import (ARQUIVO_BANCO, ARQUIVO_CONFIG, ARQUIVO_EQUIPE, EM_TESTES, NOME_AMBIENTE, PASTA_DADOS,
+                             carregar_config_flowup, conferir_ambiente)
 
 OK, AVISO, ERRO = "[ OK ]", "[AVISO]", "[ERRO]"
 problemas = 0
@@ -49,6 +51,15 @@ def chamar(cfg, metodo, recurso, **kwargs):
     cabecalhos = {"Accept": "application/json", "Authorization": f"Bearer {cfg['token']}"}
     return requests.request(metodo, url, headers=cabecalhos, timeout=cfg.get("timeout_segundos", 30),
                             allow_redirects=False, **kwargs)
+
+
+def verificar_ambiente():
+    print(f"\n== Ambiente: {NOME_AMBIENTE}")
+    problema = conferir_ambiente()
+    if problema:
+        mostrar(ERRO, problema)
+    else:
+        mostrar(OK, "pasta de dados e config.json combinam com o ambiente")
 
 
 def verificar_arquivos():
@@ -169,6 +180,11 @@ def verificar_chamados_sem_tarefa():
         return
     if not pendentes:
         mostrar(OK, "Nenhum")
+    if EM_TESTES and pendentes:
+        # Em Testes é o normal: scripts\atualizar_testes.bat apaga os vínculos com o quadro de Produção
+        print(f"   {len(pendentes)} chamados sem tarefa. Em Testes é esperado depois de atualizar os dados "
+              "(os vínculos com o FlowUp de Produção são apagados na cópia).")
+        return
     for c in pendentes:
         mostrar(AVISO, f"{c['protocolo']} (responsável: {c['responsavel']}, status: {c['status']}). "
                        "Abra o chamado no programa e salve para criar a tarefa.")
@@ -230,6 +246,7 @@ def main():
         mostrar_tarefa(cfg, args.tarefa)
         return
 
+    verificar_ambiente()
     if verificar_arquivos() and verificar_api(cfg):
         verificar_status(cfg)
         verificar_equipe(cfg)

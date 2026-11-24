@@ -2,6 +2,23 @@
 
 Formato: a versão mais nova primeiro. Cada versão distribuída deve ter uma entrada aqui e o mesmo número em `__version__` no `src/chamados/__init__.py`.
 
+## 2.4.0 (novembro de 2026)
+
+### Adicionado
+- Ambientes de **Testes** e **Produção**, cada um com pasta de dados, `config.json` e quadro do FlowUp próprios (tarefa S01, decisão em `design/decisoes/0003-ambientes-testes-e-producao.md`, fluxo em `docs/ambientes.md`).
+- Pasta de dados de Testes `Z:\Desenvolvimento\Dados\Chamados_Testes`, ligada ao quadro TESTES GERAL (2815) do projeto Desenvolvimento no FlowUp.
+- `scripts\gerar_executavel.bat testes|producao`: o ambiente fica gravado no exe. O de Testes se chama `Abertura de Chamados (TESTES).exe` e fica em `Executaveis\Testes`.
+- No ambiente de Testes, faixa laranja "AMBIENTE DE TESTES" no topo, `[TESTES]` no título e aviso na tela de carregamento.
+- Trava na abertura: o programa não abre se o ambiente do exe, a pasta de dados e o `config.json` (campo novo `"ambiente"`) não combinarem, nem se o Testes estiver com o quadro de Produção.
+- Item "Ambiente" na verificação do computador e no diagnóstico.
+- `scripts\atualizar_testes.bat`: copia banco, anexos e lista da equipe de Produção para Testes, apagando na cópia os vínculos com as tarefas do FlowUp.
+
+### Alterado
+- Rodar pelo código-fonte agora usa o ambiente de Testes por padrão. Para Produção: `set CHAMADOS_AMBIENTE=producao`.
+- O log de abertura registra o ambiente.
+
+### Migração
+- Nada muda para a equipe: Produção continua na mesma pasta e com o mesmo `config.json` (sem o campo `"ambiente"`, vale Produção).
 ## 2.3.3 (novembro de 2026)
 
 ### Adicionado

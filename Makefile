@@ -6,15 +6,18 @@
 #   make executar      abre o programa a partir do código
 #   make testar        roda os testes automáticos
 #   make cobertura     testes + relatório em docs/gerado/cobertura
-#   make executavel    gera o executável e o .zip da versão em dist/
+#   make executavel AMBIENTE=testes     exe de Testes em dist/
+#   make executavel AMBIENTE=producao   exe de Produção e o .zip da versão em dist/
 #   make limpar        apaga build/, dist/, docs/gerado/ e caches
 #   make diagnostico   diagnóstico da integração com o FlowUp (somente leitura)
+#   make atualizar-testes   copia os dados de Produção para Testes
 #
 # Argumentos extras: make executar ARGS="--opcao"  ou  make diagnostico ARGS="--tarefa 51808"
 
 ARGS ?=
+AMBIENTE ?=
 
-.PHONY: all executar testar cobertura executavel limpar diagnostico
+.PHONY: all executar testar cobertura executavel limpar diagnostico atualizar-testes
 
 all: testar
 
@@ -30,11 +33,13 @@ testar:
 cobertura:
 	scripts\cobertura.bat
 executavel:
-	scripts\gerar_executavel.bat
+	scripts\gerar_executavel.bat $(AMBIENTE)
 limpar:
 	scripts\limpar.bat
 diagnostico:
 	scripts\diagnosticar_flowup.bat $(ARGS)
+atualizar-testes:
+	scripts\atualizar_testes.bat $(ARGS)
 
 else
 
@@ -61,12 +66,18 @@ cobertura: $(PY)
 	@echo "Relatório em docs/gerado/cobertura/index.html"
 
 executavel: $(PY)
-	$(PY) -m PyInstaller --noconfirm --clean --distpath dist --workpath build scripts/abertura_de_chamados.spec
-	cd dist && zip -q "CadariChamados-v$(VERSAO).zip" "$(NOME)"
-	@echo "Pronto: dist/$(NOME) e dist/CadariChamados-v$(VERSAO).zip"
+	@test -n "$(AMBIENTE)" || (echo "Use: make executavel AMBIENTE=testes  ou  AMBIENTE=producao" && false)
+	CHAMADOS_AMBIENTE=$(AMBIENTE) $(PY) -m PyInstaller --noconfirm --clean --distpath dist --workpath build scripts/abertura_de_chamados.spec
+	@if [ "$(AMBIENTE)" = "producao" ]; then \
+		cd dist && zip -q "CadariChamados-v$(VERSAO).zip" "$(NOME)" && \
+		echo "Pronto: dist/$(NOME) e dist/CadariChamados-v$(VERSAO).zip"; \
+	else echo "Pronto: dist/$(NOME) (TESTES)"; fi
 
 diagnostico: $(PY)
 	$(PY) -m chamados.diagnostico_flowup $(ARGS)
+
+atualizar-testes: $(PY)
+	$(PY) -m chamados.atualizar_testes $(ARGS)
 
 limpar:
 	rm -rf build dist docs/gerado .coverage

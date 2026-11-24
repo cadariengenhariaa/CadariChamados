@@ -28,6 +28,7 @@ DOURADO = "#BCA985"
 DOURADO_2 = "#AA9978"
 CINZA = "#F1F2F2"
 BRANCO = "#FFFFFF"
+COR_TESTES = "#D9480F"  # laranja da faixa do ambiente de Testes (não existe em Produção)
 
 # (claro, escuro). O escuro é um azul quase preto, derivado do azul Cadari.
 COR = {

@@ -13,6 +13,7 @@ import tempfile
 
 PASTA_TESTE = tempfile.mkdtemp(prefix="chamados_teste_")
 os.environ["CHAMADOS_PASTA_DADOS"] = PASTA_TESTE
+os.environ["CHAMADOS_AMBIENTE"] = "testes"
 os.makedirs(os.path.join(PASTA_TESTE, "entrada"), exist_ok=True)
 os.makedirs(os.path.join(PASTA_TESTE, "saida"), exist_ok=True)
 os.environ.pop("CHAMADOS_FLOWUP_TOKEN", None)

@@ -2,7 +2,7 @@
 
 import customtkinter
 
-from chamados.config import VERSAO
+from chamados.config import EM_TESTES, VERSAO
 from chamados.interface import tema
 
 
@@ -32,8 +32,10 @@ class TelaCarregamento(customtkinter.CTkToplevel):
                                                   progress_color=tema.DOURADO)
         self.barra.set(0)
         self.barra.pack(fill="x", padx=48, pady=(4, 0))
-        customtkinter.CTkLabel(self, text=f"Controle de Chamados  |  versão {VERSAO}", text_color="#8FA9B3",
-                               font=tema.fonte(9)).pack(side="bottom", pady=12)
+        customtkinter.CTkLabel(self, text=f"Controle de Chamados  |  versão {VERSAO}"
+                                         + ("  |  AMBIENTE DE TESTES" if EM_TESTES else ""),
+                               text_color=tema.COR_TESTES if EM_TESTES else "#8FA9B3",
+                               font=tema.fonte(9, "bold" if EM_TESTES else "normal")).pack(side="bottom", pady=12)
         self.demora = customtkinter.CTkLabel(self, text="", text_color=tema.DOURADO, font=tema.fonte(10),
                                              wraplength=460, justify="left")
         self.demora.pack(fill="x", padx=48, pady=(8, 0))

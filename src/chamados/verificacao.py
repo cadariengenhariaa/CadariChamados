@@ -16,7 +16,8 @@ import sys
 import time
 from dataclasses import dataclass
 
-from chamados.config import ARQUIVO_BANCO, ARQUIVO_CONFIG, ARQUIVO_EQUIPE, PASTA_DADOS, PASTA_SAIDA, VERSAO, carregar_config_flowup, usuario_atual
+from chamados.config import (ARQUIVO_BANCO, ARQUIVO_CONFIG, ARQUIVO_EQUIPE, NOME_AMBIENTE, PASTA_DADOS, PASTA_SAIDA,
+                             VERSAO, carregar_config_flowup, conferir_ambiente, usuario_atual)
 
 OK, AVISO, ERRO = "OK", "AVISO", "ERRO"
 TIMEOUT_REDE = 8  # segundos; na abertura não vale a pena esperar mais que isso pelo FlowUp
@@ -43,6 +44,13 @@ def sistema():
     return Item("Computador", OK, f"{platform.platform()} ({bits}), usuário {usuario_atual()}, programa v{VERSAO}")
 
 
+def ambiente():
+    problema = conferir_ambiente()
+    if problema:
+        return Item("Ambiente", ERRO, problema, "Usar o executável do ambiente certo (docs/ambientes.md).")
+    return Item("Ambiente", OK, f"{NOME_AMBIENTE} ({PASTA_DADOS})")
+
+
 def pasta_dados():
     if os.path.isdir(PASTA_DADOS):
         return Item("Pasta da rede", OK, PASTA_DADOS)
@@ -51,7 +59,7 @@ def pasta_dados():
         return Item("Pasta da rede", ERRO, f"A unidade {unidade} não está conectada neste computador.",
                     "Mapear o drive Z: (ou reconectar a VPN) e abrir o programa de novo.")
     return Item("Pasta da rede", ERRO, f"Pasta não encontrada ou sem acesso: {PASTA_DADOS}",
-                "Pedir ao TI acesso à pasta Z:\\Desenvolvimento\\Dados\\Chamados.")
+                f"Pedir ao TI acesso à pasta {PASTA_DADOS}.")
 
 
 def gravacao():
@@ -64,7 +72,7 @@ def gravacao():
         return Item("Permissão de gravação", OK, "O usuário consegue gravar na pasta de dados.")
     except OSError as e:
         return Item("Permissão de gravação", ERRO, f"Sem permissão para gravar na pasta de dados ({e}).",
-                    "Pedir ao TI permissão de leitura e gravação na subpasta saida de Z:\\Desenvolvimento\\Dados\\Chamados.")
+                    f"Pedir ao TI permissão de leitura e gravação na subpasta saida de {PASTA_DADOS}.")
 
 
 def banco():
@@ -117,7 +125,7 @@ def conexao_flowup(timeout=TIMEOUT_REDE):
     return Item("Conexão com o FlowUp", AVISO, texto[:300], dica)
 
 
-VERIFICACOES = [sistema, pasta_dados, gravacao, banco, lista_equipe, configuracao, conexao_flowup]
+VERIFICACOES = [sistema, ambiente, pasta_dados, gravacao, banco, lista_equipe, configuracao, conexao_flowup]
 
 
 def verificar_tudo(ao_avancar=None):
@@ -137,7 +145,7 @@ def verificar_tudo(ao_avancar=None):
 
 
 def relatorio_texto(itens):
-    linhas = [f"Verificação do computador - Controle de Chamados v{VERSAO}"]
+    linhas = [f"Verificação do computador - Controle de Chamados v{VERSAO} ({NOME_AMBIENTE})"]
     for it in itens:
         linhas.append(f"[{it.situacao}] {it.nome}: {it.detalhe}" + (f" -> {it.dica}" if it.dica else ""))
     return "\n".join(linhas)

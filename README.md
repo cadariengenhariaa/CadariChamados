@@ -6,7 +6,7 @@
 
 Programa interno da Cadari para a equipe pedir suporte, fazer a triagem dos pedidos e transformar cada chamado em tarefa no FlowUp.
 
-**Status:** em produção · **Versão:** 2.3.1 · **Python:** 3.12 · [Histórico de versões](CHANGELOG.md)
+**Status:** em produção · **Versão:** 2.4.0 · **Python:** 3.12 · [Histórico de versões](CHANGELOG.md)
 
 ## Índice
 
@@ -44,6 +44,7 @@ Todos os usuários trabalham sobre os mesmos dados, que ficam numa pasta da rede
 - **Equipe sincronizada:** a cada abertura, a lista de pessoas é atualizada com os usuários ativos do FlowUp.
 - **Verificação do computador:** na abertura e pelo botão "Verificar computador", o programa confere a pasta da rede, a permissão de gravação, o banco e a conexão com o FlowUp, e mostra o que falta quando algo não está certo.
 - **Tema claro e escuro, e zoom:** a escolha fica salva por pessoa.
+- **Ambientes de Testes e Produção:** toda alteração é validada num exe de Testes, com dados e quadro do FlowUp próprios, antes de chegar à equipe ([docs/ambientes.md](docs/ambientes.md)).
 
 ## Como usar
 
@@ -67,12 +68,13 @@ Termos que aparecem daqui para baixo, para quem não programa no dia a dia.
 | Commit | Um registro de alteração no repositório, com uma mensagem dizendo o que mudou. |
 | Branch | Uma cópia de trabalho do código, separada da versão oficial, onde uma tarefa é feita. |
 | Pull Request (PR) | O pedido para juntar uma branch ao código oficial, com revisão de outra pessoa. |
-| Chave do Jira | O código do ticket da tarefa (ex.: `CHAVE-12`). Vai na branch, no commit e no PR. |
+| Chave da tarefa | O código da tarefa: `C0xx` quando vem de um chamado, `Sxx` quando é uma tarefa da Sprint. Vai na branch, no commit e no PR. |
 | Terminal | A janela de comandos do Windows (Prompt de Comando ou PowerShell). |
 | Ambiente virtual (`.venv`) | Uma pasta com o Python e as bibliotecas só deste projeto, para não misturar com outros. |
 | Executável (`.exe`) | O programa pronto, que a equipe abre com dois cliques. |
 | FlowUp | O sistema de gestão de tarefas da Cadari. O programa conversa com ele pela API (endereço `https://api.flowup.me`). |
 | Token | A senha de acesso à API do FlowUp. Fica só no `config.json` da rede, nunca no código. |
+| Ambiente | Conjunto de dados, configuração e executável. **Testes** é onde as alterações são validadas; **Produção** é o que a equipe usa. |
 
 ## Tecnologias
 
@@ -120,13 +122,7 @@ Esta seção é para quem vai alterar o código.
 
    No final deve aparecer `OK`.
 
-3. Para testar sem mexer nos dados reais, aponte o programa para uma cópia da pasta de dados (como montar a cópia: [docs/desenvolvimento.md](docs/desenvolvimento.md#rodar-sem-mexer-nos-dados-reais)):
-
-   ```bat
-   set CHAMADOS_PASTA_DADOS=C:\temp\chamados_teste
-   ```
-
-   No PowerShell: `$env:CHAMADOS_PASTA_DADOS = "C:\temp\chamados_teste"`. Sem essa variável, o programa usa a pasta de dados real do Z:.
+3. A partir do código, o programa usa o **ambiente de Testes** (`Z:\Desenvolvimento\Dados\Chamados_Testes` e o quadro TESTES GERAL do FlowUp), sem mexer nos dados reais. Para usar uma cópia só sua, veja [docs/desenvolvimento.md](docs/desenvolvimento.md#rodar-sem-mexer-nos-dados-reais). Ambientes e fluxo de publicação: [docs/ambientes.md](docs/ambientes.md).
 
 4. Abra o programa a partir do código:
 
@@ -143,19 +139,22 @@ Todos rodam no terminal, a partir da pasta do repositório. Quem tem o `make` in
 | `scripts\executar.bat` | `make executar` | Abre o programa a partir do código |
 | `scripts\testar.bat` | `make testar` | Roda os testes automáticos |
 | `scripts\cobertura.bat` | `make cobertura` | Roda os testes e mostra quanto do código eles cobrem (`docs\gerado\cobertura\index.html`) |
-| `scripts\gerar_executavel.bat` | `make executavel` | Gera o executável e o `.zip` da versão em `dist\` |
+| `scripts\gerar_executavel.bat testes` | `make executavel AMBIENTE=testes` | Gera o executável de Testes em `dist\` |
+| `scripts\gerar_executavel.bat producao` | `make executavel AMBIENTE=producao` | Gera o executável de Produção e o `.zip` da versão em `dist\` |
 | `scripts\limpar.bat` | `make limpar` | Apaga as pastas geradas (`build\`, `dist\`, `docs\gerado\`) |
-| `scripts\diagnosticar_flowup.bat` | `make diagnostico` | Confere a pasta de dados e a integração com o FlowUp, sem alterar nada |
+| `scripts\diagnosticar_flowup.bat` | `make diagnostico` | Confere o ambiente, a pasta de dados e a integração com o FlowUp, sem alterar nada (Testes, a não ser com `set CHAMADOS_AMBIENTE=producao`) |
+| `scripts\atualizar_testes.bat` | `make atualizar-testes` | Copia os dados de Produção para o ambiente de Testes (pede confirmação) |
 
 O diagnóstico aceita `--tarefa 51808` (mostra uma tarefa do FlowUp) e `--gerar-token` (gera um token novo). Detalhes em [docs/manutencao.md](docs/manutencao.md).
 
 ## Gerar o executável
 
+Toda versão passa primeiro por Testes e só depois vai para Produção ([docs/ambientes.md](docs/ambientes.md#fluxo-de-publicação-testes--produção)).
+
 1. Confira se a versão em `src\chamados\__init__.py` e a primeira entrada do `CHANGELOG.md` são a mesma.
-2. Rode `scripts\gerar_executavel.bat`.
-3. O programa sai em `dist\Abertura de Chamados.exe` (um arquivo único) e o pacote para a Release em `dist\CadariChamados-vX.Y.Z.zip`.
-4. Teste o executável com uma cópia dos dados.
-5. Anexe o `.zip` na Release do GitHub e copie o `.exe` para `Z:\Biblioteca\Padronização\Cadari\Executaveis`. Passo a passo da distribuição em [docs/desenvolvimento.md](docs/desenvolvimento.md#distribuir-para-a-equipe).
+2. Na `develop`, rode `scripts\gerar_executavel.bat testes`. Sai `dist\Abertura de Chamados (TESTES).exe`; copie para `Z:\Biblioteca\Padronização\Cadari\Executaveis\Testes` e faça o checklist de validação.
+3. Validado, na `main` rode `scripts\gerar_executavel.bat producao`. O programa sai em `dist\Abertura de Chamados.exe` (um arquivo único) e o pacote para a Release em `dist\CadariChamados-vX.Y.Z.zip`.
+4. Anexe o `.zip` na Release do GitHub e copie o `.exe` para `Z:\Biblioteca\Padronização\Cadari\Executaveis`. Passo a passo da distribuição em [docs/desenvolvimento.md](docs/desenvolvimento.md#distribuir-para-a-equipe).
 
 ## Estrutura do repositório
 
@@ -165,7 +164,7 @@ CadariChamados/
 │   └── chamados/                   # código do programa
 │       ├── __init__.py             # versão (__version__)
 │       ├── __main__.py             # ponto de entrada
-│       ├── config.py               # pasta de dados, config.json, recursos e log
+│       ├── config.py               # ambiente, pasta de dados, config.json, recursos e log
 │       ├── categorias.py           # categorias e assuntos do formulário
 │       ├── database.py             # leitura e gravação no banco SQLite
 │       ├── equipe.py               # sincronização da lista da equipe com o FlowUp
@@ -173,6 +172,7 @@ CadariChamados/
 │       ├── servico.py              # regras da integração (criar, atualizar e excluir tarefas)
 │       ├── verificacao.py          # verificação do computador (rede, permissões, FlowUp)
 │       ├── diagnostico_flowup.py   # diagnóstico da integração (scripts\diagnosticar_flowup.bat)
+│       ├── atualizar_testes.py     # copia os dados de Produção para Testes (scripts\atualizar_testes.bat)
 │       └── interface/              # telas (CustomTkinter)
 ├── tests/                          # testes automáticos (espelham src/chamados)
 ├── design/                         # especificação e decisões de design
@@ -195,36 +195,55 @@ CadariChamados/
 | O quê | Onde | Vai para o GitHub? |
 |---|---|---|
 | Código, imagens, testes e documentação | este repositório | Sim |
-| O que alimenta o programa: `config.json` (token do FlowUp) e lista da equipe (`nomes_equipe.csv`) | `Z:\Desenvolvimento\Dados\Chamados\entrada` | **Não, nunca** |
-| O que o programa produz: banco de chamados (`chamados.db`), anexos e logs | `Z:\Desenvolvimento\Dados\Chamados\saida` | **Não, nunca** |
-| Executável usado pela equipe | `Z:\Biblioteca\Padronização\Cadari\Executaveis` (gerado em `dist\`) | Não (vai anexado na Release) |
+| O que alimenta o programa: `config.json` (token do FlowUp) e lista da equipe (`nomes_equipe.csv`) | Produção: `Z:\Desenvolvimento\Dados\Chamados\entrada`<br>Testes: `Z:\Desenvolvimento\Dados\Chamados_Testes\entrada` | **Não, nunca** |
+| O que o programa produz: banco de chamados (`chamados.db`), anexos e logs | Produção: `Z:\Desenvolvimento\Dados\Chamados\saida`<br>Testes: `Z:\Desenvolvimento\Dados\Chamados_Testes\saida` | **Não, nunca** |
+| Executável usado pela equipe (Produção) | `Z:\Biblioteca\Padronização\Cadari\Executaveis` (gerado em `dist\`) | Não (vai anexado na Release) |
+| Executável de Testes (só TI) | `Z:\Biblioteca\Padronização\Cadari\Executaveis\Testes` | Não |
 
 ## Como contribuir
 
-Toda alteração segue o Processo de desenvolvimento do TI Cadari:
+Toda alteração segue o Processo de desenvolvimento do TI Cadari. Cada alteração nasce de uma tarefa, e a chave dessa tarefa acompanha a branch, os commits e o PR, para que qualquer pessoa saiba de onde veio a mudança.
 
-1. Pegue o ticket no Jira e mova para **Desenvolvimento**.
-2. Crie a branch a partir da `develop`: `feature/CHAVE-12-descricao-curta` (ou `fix/`, `refactor/`).
-3. Faça os commits no padrão: `[CHAVE-12] feat: criar filtro por responsável`.
-4. Abra o PR para a `develop` com o título `[CHAVE-12] Abertura de Chamados x Criar filtro por responsável`, preencha a descrição e peça revisão. Mova o card para **Code review**.
-5. Depois da aprovação, faça o **squash and merge** e mova o card para **Teste**.
+### Chave da tarefa
+
+| Chave | Origem | Formato |
+|---|---|---|
+| `C0xx` | Chamado aberto neste programa | o protocolo do chamado (C + número) |
+| `Sxx` | Tarefa planejada na Sprint | S + número da tarefa na Sprint |
+
+### Passo a passo
+
+1. Descubra a chave da tarefa (`C0xx` ou `Sxx`).
+2. Crie a branch a partir da `develop`, com o tipo, a chave e uma descrição curta, sem espaço nem acento:
+   - `feature/Sxx-descricao-curta` para funcionalidade nova;
+   - `fix/C0xx-descricao-curta` para correção;
+   - `refactor/...` para melhoria sem mudar o comportamento.
+3. Faça os commits no padrão `[CHAVE] tipo: título no infinitivo` (tabela abaixo).
+4. Rode `scripts\testar.bat` e teste pelo código, que usa o ambiente de Testes.
+5. Abra o PR para a `develop` (confira a base antes de criar) e peça revisão:
+   - **Título:** `[CHAVE] Abertura de Chamados x Nome da tarefa`;
+   - **Descrição:** o modelo de `.github/pull_request_template.md` aparece sozinho. Preencha **O que foi feito** (as mudanças, em tópicos curtos), **Como testar** (os passos para quem revisa conferir) e **Tarefa** (a chave).
+6. Depois da aprovação, faça o **squash and merge**: os commits da branch viram um só na `develop`.
+7. Gere o exe de Testes a partir da `develop`, valide e só então abra o PR da `develop` para a `main` ([docs/ambientes.md](docs/ambientes.md)).
+
+### Tipos de commit
 
 | Tipo | Quando usar | Exemplo |
 |---|---|---|
-| `feat` | Nova funcionalidade | `[CHAVE-12] feat: criar filtro por responsável` |
-| `fix` | Correção de erro | `[CHAVE-31] fix: corrigir data de entrega no FlowUp` |
-| `docs` | Documentação | `[CHAVE-45] docs: atualizar README com instalação` |
-| `refactor` | Melhoria sem mudar comportamento | `[CHAVE-40] refactor: extrair montagem da tarefa` |
-| `test` | Testes automáticos | `[CHAVE-41] test: adicionar testes da lista da equipe` |
-| `style` | Formatação, sem mudar lógica | `[CHAVE-60] style: padronizar indentação da interface` |
-| `chore` | Configuração e dependências | `[CHAVE-52] chore: atualizar versão do customtkinter` |
+| `feat` | Nova funcionalidade | `[Sxx] feat: criar filtro por responsável` |
+| `fix` | Correção de erro | `[C0xx] fix: corrigir data de entrega no FlowUp` |
+| `docs` | Documentação | `[Sxx] docs: atualizar README com instalação` |
+| `refactor` | Melhoria sem mudar comportamento | `[C0xx] refactor: extrair montagem da tarefa` |
+| `test` | Testes automáticos | `[C0xx] test: adicionar testes da lista da equipe` |
+| `style` | Formatação, sem mudar lógica | `[Sxx] style: padronizar indentação da interface` |
+| `chore` | Configuração e dependências | `[Sxx] chore: atualizar versão do customtkinter` |
 
-O título do commit usa verbo no infinitivo e completa a frase "Este commit vai...". `CHAVE` é a chave deste projeto no Jira.
+O título do commit usa verbo no infinitivo e completa a frase "Este commit vai...".
 
 Regras do projeto:
 
 - Token, senha e caminho de rede não entram no código. Ficam no `config.json` da pasta de dados ou em `src/chamados/config.py`.
-- Teste com uma cópia dos dados antes de distribuir uma versão nova.
+- Valide no ambiente de Testes antes de distribuir uma versão nova.
 - Se a integração com o FlowUp parar, rode `scripts\diagnosticar_flowup.bat` antes de mexer no código.
 
 ## Documentação
@@ -233,6 +252,7 @@ Regras do projeto:
 |---|---|
 | [docs/arquitetura.md](docs/arquitetura.md) | Organização do código, banco de dados e regras da integração com o FlowUp |
 | [docs/configuracao.md](docs/configuracao.md) | `config.json`, token do FlowUp, IDs, lista da equipe e categorias do formulário |
+| [docs/ambientes.md](docs/ambientes.md) | Ambientes de Testes e Produção e fluxo de publicação entre eles |
 | [docs/desenvolvimento.md](docs/desenvolvimento.md) | Ambiente, testes, geração do executável e distribuição |
 | [docs/manutencao.md](docs/manutencao.md) | Diagnóstico, erros comuns, logs, backup e histórico de incidentes |
 | [design/decisoes/](design/decisoes/) | Decisões de design, uma por arquivo |
