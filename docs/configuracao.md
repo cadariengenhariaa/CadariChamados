@@ -57,6 +57,7 @@ Fica em `entrada\` na pasta de dados e **não vai para o GitHub**. O modelo est�
 | `seguidores_fixos` | IDs de usuários que seguem todas as tarefas, além do solicitante | `[10]` (Renata) |
 | `status` | Status do quadro e seus IDs, usados quando o FlowUp não responde na abertura | ver tabela em [arquitetura.md](arquitetura.md#status) |
 | `status_final` | Status que encerra o chamado | Finalizadas |
+| `prioridades` | Urgências da tela e o valor de cada uma no campo `Priority` da tarefa (0 a 3). A ordem é a da lista. Confira no FlowUp se o nome combina com o valor | Baixa 0, Média 1, Alta 2, Urgente 3 |
 | `sincronizar_equipe` | Atualiza o `nomes_equipe.csv` pelo FlowUp a cada abertura | `true` |
 | `timeout_segundos` | Tempo máximo de espera por resposta da API | 30 |
 

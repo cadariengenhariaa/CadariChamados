@@ -40,6 +40,11 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(cfg["token"], "")
         self.assertEqual(cfg["quadro_id"], 2271)
 
+    def test_prioridades_padrao_e_substituicao_pelo_config_json(self):
+        self.assertEqual(list(config.carregar_config_flowup()["prioridades"]), ["Baixa", "Média", "Alta", "Urgente"])
+        gravar_config(prioridades={"Normal": 0, "Crítica": 3})
+        self.assertEqual(config.carregar_config_flowup()["prioridades"], {"Normal": 0, "Crítica": 3})
+
     def test_config_json_sobrescreve_e_completa_status(self):
         gravar_config(quadro_id=999, status={"Visto": 1})
         cfg = config.carregar_config_flowup()

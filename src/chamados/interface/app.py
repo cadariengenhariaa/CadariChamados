@@ -49,16 +49,21 @@ class App(customtkinter.CTk):
             tema.escala = 1.0
         customtkinter.set_widget_scaling(tema.escala)
         self.title(f"Controle de Chamados (v{VERSAO})")
-        largura, altura = 1320, 840
-        self.geometry(f"{largura}x{altura}+{max(0, (self.winfo_screenwidth() - largura) // 2)}"
-                      f"+{max(0, (self.winfo_screenheight() - altura) // 2 - 20)}")
-        self.minsize(1180, 720)
+        # Tamanho em pixels de tela; o CustomTkinter aplica o DPI do Windows e o zoom por cima.
+        escala_janela = customtkinter.ScalingTracker.get_window_scaling(self)
+        largura = min(1480, int(self.winfo_screenwidth() / escala_janela) - 60)
+        altura = min(920, int(self.winfo_screenheight() / escala_janela) - 100)
+        x = max(0, (self.winfo_screenwidth() - int(largura * escala_janela)) // 2)
+        y = max(0, (self.winfo_screenheight() - int(altura * escala_janela)) // 2 - 20)
+        self.geometry(f"{largura}x{altura}+{x}+{y}")
+        self.minsize(1180, 700)
         self.configure(fg_color=tema.COR["fundo"])
         try:
             self.iconbitmap(resource_path(os.path.join("assets", "icone.ico")))
         except Exception:
             pass
 
+        self.aba_ativa = "Novo chamado"
         self.nomes_map = {}
         self.nomes = []
         self.status_nomes, self.status_final = [], ""
@@ -156,7 +161,7 @@ class App(customtkinter.CTk):
 
         self.abas = {}
         for nome in ("Novo chamado", "Chamados"):
-            b = customtkinter.CTkButton(topo, text=nome, width=130, height=72, corner_radius=0,
+            b = customtkinter.CTkButton(topo, text=nome, width=150, height=72, corner_radius=0,
                                         fg_color="transparent", hover_color=tema.COR["topo_ativo"], text_color=tema.CINZA,
                                         font=tema.fonte(12, "bold"), command=lambda n=nome: self.mostrar_tela(n))
             b.pack(side="left")
@@ -168,7 +173,7 @@ class App(customtkinter.CTk):
         self.tema_escuro.pack(side="right", padx=32)
         if tema.escuro():
             self.tema_escuro.select()
-        customtkinter.CTkButton(topo, text="Verificar computador", width=150, height=30, corner_radius=4,
+        customtkinter.CTkButton(topo, text="Verificar computador", width=180, height=34, corner_radius=4,
                                 fg_color="transparent", hover_color=tema.COR["topo_ativo"], border_width=1,
                                 border_color="#8FA9B3", text_color=tema.CINZA, font=tema.fonte(10, "bold"),
                                 command=self.verificar_computador).pack(side="right", padx=(8, 0))
@@ -215,6 +220,7 @@ class App(customtkinter.CTk):
     def mostrar_tela(self, nome):
         mostrar, esconder = ((self.tela_novo, self.tela_chamados) if nome == "Novo chamado"
                              else (self.tela_chamados, self.tela_novo))
+        self.aba_ativa = nome
         esconder.grid_remove()
         mostrar.grid(row=0, column=0, sticky="nsew")
         for n, b in self.abas.items():
@@ -267,6 +273,9 @@ class App(customtkinter.CTk):
             customtkinter.set_widget_scaling(novo)
             tema.salvar_preferencia("zoom", novo)
             self._redesenhar()
+            # O CustomTkinter reexibe a tela escondida ao mudar a escala; recoloca só a aba ativa.
+            self.mostrar_tela(self.aba_ativa)
+            self.after(100, lambda: self.mostrar_tela(self.aba_ativa))
             self.rotulo_zoom.configure(text="" if novo == 1.0 else f"Zoom {round(novo * 100)}%")
         return "break"
 

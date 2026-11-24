@@ -91,7 +91,7 @@ def montar_payload(chamado, nomes_map, cfg=None):
         inicio = fim = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
     # Campos fixos herdados da integração original e aceitos pela API desde jan/2026
-    return {
+    payload = {
         "Id": chamado.get("flowup_task_id") or 0,
         "Title": f"Chamado {chamado.get('protocolo')} - {chamado.get('tema')}",
         "Description": descricao_html(chamado),
@@ -115,6 +115,11 @@ def montar_payload(chamado, nomes_map, cfg=None):
         "ServiceId": 0,
         "CustomFieldAnswers": [],
     }
+    # Chamados antigos, abertos antes da urgência existir, não mandam Priority.
+    prioridade = cfg.get("prioridades", {}).get(chamado.get("urgencia"))
+    if prioridade is not None:
+        payload["Priority"] = prioridade
+    return payload
 
 
 def sincronizar_tarefa(protocolo, nomes_map):

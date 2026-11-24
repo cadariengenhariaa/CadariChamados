@@ -78,6 +78,11 @@ def criar_tabela():
         except sqlite3.OperationalError:
             cursor.execute("ALTER TABLE chamados ADD COLUMN flowup_task_id INTEGER")
 
+        # Coluna da urgência (2.3.3). Exes antigos ignoram a coluna extra sem problema.
+        colunas = [linha[1] for linha in cursor.execute("PRAGMA table_info(chamados)")]
+        if "urgencia" not in colunas:
+            cursor.execute("ALTER TABLE chamados ADD COLUMN urgencia TEXT")
+
         # Desde a 2.2 os status são os mesmos do quadro do FlowUp. Converte os nomes antigos.
         for antigo, novo in STATUS_ANTIGOS.items():
             cursor.execute("UPDATE chamados SET status = ? WHERE status = ?", (novo, antigo))
@@ -89,15 +94,15 @@ def criar_tabela():
         conn.close()
 
 
-def registrar_chamado_db(nome, software, ferramenta, tema, descricao, caminho_imagem=None):
+def registrar_chamado_db(nome, software, ferramenta, tema, descricao, caminho_imagem=None, urgencia=None):
     """Insere um novo chamado e devolve o protocolo gerado (C001, C002...) ou None."""
     conn = None
     try:
         conn = sqlite3.connect(ARQUIVO_BANCO)
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO chamados (nome_solicitante, software, ferramenta, tema, descricao, caminho_imagem, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (nome, software, ferramenta, tema, descricao, caminho_imagem, STATUS_INICIAL)
+            "INSERT INTO chamados (nome_solicitante, software, ferramenta, tema, descricao, caminho_imagem, status, urgencia) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (nome, software, ferramenta, tema, descricao, caminho_imagem, STATUS_INICIAL, urgencia)
         )
         novo_id = cursor.lastrowid
         novo_protocolo = f"C{novo_id:03d}"
@@ -134,8 +139,9 @@ def buscar_chamado_por_protocolo(protocolo):
         return None
 
 
-def atualizar_chamado_db(protocolo, designado_por, responsavel, data_entrega, status, observacoes, usuario_logado, caminho_imagem_atual=None):
-    """Atualiza a triagem do chamado. caminho_imagem_atual=None mantém a imagem gravada."""
+def atualizar_chamado_db(protocolo, designado_por, responsavel, data_entrega, status, observacoes, usuario_logado,
+                         caminho_imagem_atual=None, urgencia=None):
+    """Atualiza a triagem do chamado. caminho_imagem_atual=None mantém a imagem; urgencia=None mantém a urgência."""
     try:
         conn = sqlite3.connect(ARQUIVO_BANCO)
         cursor = conn.cursor()
@@ -154,6 +160,10 @@ def atualizar_chamado_db(protocolo, designado_por, responsavel, data_entrega, st
         if caminho_imagem_atual is not None:
             query += ", caminho_imagem = ?"
             params.append(caminho_imagem_atual)
+
+        if urgencia is not None:
+            query += ", urgencia = ?"
+            params.append(urgencia)
 
         query += " WHERE protocolo = ?"
         params.append(protocolo)

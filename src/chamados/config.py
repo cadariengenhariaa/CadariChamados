@@ -81,6 +81,9 @@ FLOWUP_PADRAO = {
     "quadro_id": 2271,
     "tag": {"Id": 286, "Name": "Chamados", "Color": "#ff4500", "Active": True},
     "seguidores_fixos": [10],
+    # Urgência do chamado -> valor do campo Priority da tarefa no FlowUp (a API aceita 0 a 3).
+    # A ordem daqui é a ordem da lista na tela. Confira os nomes no FlowUp e ajuste no config.json.
+    "prioridades": {"Baixa": 0, "Média": 1, "Alta": 2, "Urgente": 3},
     # Status do quadro (os mesmos nomes do FlowUp). Ao abrir, o programa lê a lista atual do
     # quadro no FlowUp; estes valores só valem se o FlowUp não responder.
     "status": {
@@ -92,6 +95,9 @@ FLOWUP_PADRAO = {
     "status_final": "Finalizadas",
     "timeout_segundos": 30,
 }
+
+
+URGENCIA_PADRAO = "Média"  # urgência escolhida ao abrir um chamado novo
 
 
 def carregar_config_flowup():
@@ -110,6 +116,8 @@ def carregar_config_flowup():
         for chave, valor in secao.items():
             if chave == "status" and isinstance(valor, dict):
                 cfg["status"].update(valor)
+            elif chave == "prioridades" and isinstance(valor, dict) and valor:
+                cfg["prioridades"] = valor  # substitui a lista inteira (nomes e ordem)
             else:
                 cfg[chave] = valor
     except FileNotFoundError:

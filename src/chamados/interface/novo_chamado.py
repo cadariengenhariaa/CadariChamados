@@ -9,7 +9,7 @@ from tkinter import filedialog, messagebox
 import customtkinter
 
 from chamados.categorias import FERRAMENTAS
-from chamados.config import PASTA_ANEXOS, usuario_atual
+from chamados.config import PASTA_ANEXOS, URGENCIA_PADRAO, carregar_config_flowup, usuario_atual
 from chamados.database import atualizar_caminho_imagem_db, atualizar_chamado_db, registrar_chamado_db
 from chamados.servico import ErroIntegracao, sincronizar_tarefa
 from chamados.interface import tema
@@ -41,7 +41,7 @@ class TelaNovoChamado(customtkinter.CTkScrollableFrame):
         self.descricao.grid(row=10, column=0, sticky="ew")
         linha_anexo = customtkinter.CTkFrame(esq, fg_color="transparent")
         linha_anexo.grid(row=11, column=0, sticky="ew", pady=(12, 0))
-        tema.botao(linha_anexo, "Anexar imagem", self._anexar, tipo="secundario", width=150).pack(side="left")
+        tema.botao(linha_anexo, "Anexar imagem", self._anexar, tipo="secundario", width=170).pack(side="left")
         self.rotulo_anexo = tema.rotulo(linha_anexo, "Nenhuma imagem (opcional)", 9)
         self.rotulo_anexo.pack(side="left", padx=12)
 
@@ -52,22 +52,29 @@ class TelaNovoChamado(customtkinter.CTkScrollableFrame):
         self.titulos.append(tema.TituloSecao(dir_, "Encaminhamento"))
         self.titulos[1].grid(row=0, column=0, sticky="ew", pady=(0, 14))
         self.responsavel = self._campo_lista(dir_, 1, "Responsável", [SEM_RESPONSAVEL])
-        tema.rotulo(dir_, "Data de entrega").grid(row=3, column=0, sticky="w", pady=(10, 2))
-        self.entrega = seletor_data(dir_)
-        self.entrega.grid(row=4, column=0, sticky="w")
-        self.status = self._campo_lista(dir_, 5, "Status inicial", app.status_nomes)
+        # Data de entrega, status e urgência na mesma linha
+        linha = customtkinter.CTkFrame(dir_, fg_color="transparent")
+        linha.grid(row=3, column=0, sticky="ew")
+        linha.grid_columnconfigure(1, weight=1)
+        linha.grid_columnconfigure(2, weight=1)
+        tema.rotulo(linha, "Data de entrega").grid(row=0, column=0, sticky="w", pady=(10, 2))
+        self.entrega = seletor_data(linha)
+        self.entrega.grid(row=1, column=0, sticky="w")
+        self.urgencias = list(carregar_config_flowup()["prioridades"])
+        self.status = self._campo_na_linha(linha, 1, "Status inicial", app.status_nomes)
+        self.urgencia = self._campo_na_linha(linha, 2, "Urgência", self.urgencias, URGENCIA_PADRAO)
         tema.rotulo(dir_, "Observações da triagem (opcional)").grid(row=7, column=0, sticky="w", pady=(10, 2))
         self.observacoes = tema.caixa_texto(dir_, 112)
         self.observacoes.grid(row=8, column=0, sticky="ew")
         tema.rotulo(dir_, "Com um responsável escolhido, a tarefa é criada no FlowUp ao registrar, já com a "
                           "descrição do chamado. Sem responsável, o chamado fica aguardando triagem.", 9,
-                    wraplength=440).grid(row=9, column=0, sticky="w", pady=(12, 0))
+                    wraplength=480).grid(row=9, column=0, sticky="w", pady=(12, 0))
 
         # --- Ações ---
         acoes = customtkinter.CTkFrame(self, fg_color="transparent")
         acoes.grid(row=1, column=0, columnspan=2, sticky="ew", padx=32, pady=(18, 24))
-        tema.botao(acoes, "Registrar chamado", self.registrar, width=200).pack(side="left")
-        tema.botao(acoes, "Limpar", self.limpar, tipo="secundario", width=110).pack(side="left", padx=12)
+        tema.botao(acoes, "Registrar chamado", self.registrar, width=220).pack(side="left")
+        tema.botao(acoes, "Limpar", self.limpar, tipo="secundario", width=120).pack(side="left", padx=12)
         self.mensagem = tema.rotulo(acoes, "", 10)
         self.mensagem.pack(side="left", padx=8)
 
@@ -77,6 +84,15 @@ class TelaNovoChamado(customtkinter.CTkScrollableFrame):
         widget.grid(row=linha + 1, column=0, sticky="ew")
         if valores:
             widget.set(valores[0])
+        return widget
+
+    def _campo_na_linha(self, linha, coluna, texto, valores, inicial=None):
+        """Lista com rótulo, para ficar ao lado de outros campos na mesma linha."""
+        tema.rotulo(linha, texto).grid(row=0, column=coluna, sticky="w", padx=(16, 0), pady=(10, 2))
+        widget = tema.lista(linha, valores, state="readonly")
+        widget.grid(row=1, column=coluna, sticky="ew", padx=(16, 0))
+        if valores:
+            widget.set(inicial if inicial in valores else valores[0])
         return widget
 
     def atualizar_nomes(self, nomes):
@@ -103,6 +119,7 @@ class TelaNovoChamado(customtkinter.CTkScrollableFrame):
         self.observacoes.delete("1.0", "end")
         self.responsavel.set(SEM_RESPONSAVEL)
         self.status.set(self.app.status_nomes[0])
+        self.urgencia.set(URGENCIA_PADRAO if URGENCIA_PADRAO in self.urgencias else self.urgencias[0])
         self.entrega.set_date(date.today())
         self.caminho_anexo = None
         self.rotulo_anexo.configure(text="Nenhuma imagem (opcional)")
@@ -123,7 +140,7 @@ class TelaNovoChamado(customtkinter.CTkScrollableFrame):
         responsavel = "" if responsavel == SEM_RESPONSAVEL else responsavel
 
         protocolo = registrar_chamado_db(nome, self.software.get(), self.ferramenta.get(), tema_txt,
-                                         self.descricao.get("1.0", "end-1c").strip())
+                                         self.descricao.get("1.0", "end-1c").strip(), urgencia=self.urgencia.get())
         if not protocolo:
             messagebox.showerror("Erro no banco de dados",
                                  "Não foi possível registrar o chamado. Confira o acesso à pasta da rede.")

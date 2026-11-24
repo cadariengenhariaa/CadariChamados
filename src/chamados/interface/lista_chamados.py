@@ -9,7 +9,7 @@ from tkinter import filedialog, messagebox, ttk
 import customtkinter
 
 from chamados.categorias import FERRAMENTAS
-from chamados.config import resolver_caminho_dados, usuario_atual
+from chamados.config import carregar_config_flowup, resolver_caminho_dados, usuario_atual
 from chamados.database import atualizar_chamado_db, buscar_chamado_por_protocolo, buscar_todos_os_chamados
 from chamados.servico import ErroIntegracao, excluir_chamado, sincronizar_tarefa
 from chamados.interface import tema
@@ -17,8 +17,8 @@ from chamados.interface.comum import chave_ordenacao, data_brasil, seletor_data
 
 
 class TelaChamados(customtkinter.CTkFrame):
-    COLUNAS = (("protocolo", "Protocolo", 80), ("tema", "Tema", 220), ("nome_solicitante", "Solicitante", 150),
-               ("responsavel", "Responsável", 150), ("status", "Status", 110), ("data_hora", "Abertura", 125))
+    COLUNAS = (("protocolo", "Protocolo", 90), ("tema", "Tema", 220), ("nome_solicitante", "Solicitante", 150),
+               ("responsavel", "Responsável", 150), ("status", "Status", 120), ("data_hora", "Abertura", 150))
 
     def __init__(self, master, app):
         super().__init__(master, fg_color=tema.COR["fundo"], corner_radius=0)
@@ -44,8 +44,8 @@ class TelaChamados(customtkinter.CTkFrame):
         self.f_pessoa = tema.lista(filtros, ["Todas as pessoas"], width=200, state="readonly")
         self.f_pessoa.set("Todas as pessoas")
         self.f_pessoa.pack(side="left", padx=8)
-        tema.botao(filtros, "Filtrar", self.recarregar, width=90).pack(side="left", padx=8)
-        tema.botao(filtros, "Exportar CSV", self.exportar, tipo="secundario", width=120).pack(side="right", padx=32)
+        tema.botao(filtros, "Filtrar", self.recarregar, width=100).pack(side="left", padx=8)
+        tema.botao(filtros, "Exportar CSV", self.exportar, tipo="secundario", width=140).pack(side="right", padx=32)
 
         # --- Lista ---
         caixa = customtkinter.CTkFrame(self, fg_color="transparent")
@@ -77,7 +77,7 @@ class TelaChamados(customtkinter.CTkFrame):
         self.titulo = tema.TituloSecao(d, "Selecione um chamado", fundo="painel")
         self.titulo.grid(row=0, column=0, sticky="ew", padx=16, pady=(16, 8))
         self.resumo = tema.rotulo(d, "Escolha um chamado na lista para ver os detalhes.", 10, "texto",
-                                  wraplength=420)
+                                  wraplength=460)
         self.resumo.grid(row=1, column=0, sticky="ew", padx=16)
         self.texto_desc = tema.caixa_texto(d, 110)
         self.texto_desc.grid(row=2, column=0, sticky="ew", padx=16, pady=(8, 0))
@@ -90,9 +90,15 @@ class TelaChamados(customtkinter.CTkFrame):
         tema.rotulo(d, "Data de entrega").grid(row=8, column=0, sticky="w", padx=16, pady=(10, 2))
         self.entrega = seletor_data(d)
         self.entrega.grid(row=9, column=0, sticky="w", padx=16)
-        tema.rotulo(d, "Status").grid(row=10, column=0, sticky="w", padx=16, pady=(10, 2))
-        self.status = tema.lista(d, self.app.status_nomes, state="readonly")
-        self.status.grid(row=11, column=0, sticky="ew", padx=16)
+        linha = customtkinter.CTkFrame(d, fg_color="transparent")  # status e urgência lado a lado
+        linha.grid(row=10, column=0, rowspan=2, sticky="ew", padx=16)
+        linha.grid_columnconfigure((0, 1), weight=1, uniform="par")
+        tema.rotulo(linha, "Status").grid(row=0, column=0, sticky="w", pady=(10, 2))
+        self.status = tema.lista(linha, self.app.status_nomes, state="readonly")
+        self.status.grid(row=1, column=0, sticky="ew", padx=(0, 6))
+        tema.rotulo(linha, "Urgência").grid(row=0, column=1, sticky="w", padx=(6, 0), pady=(10, 2))
+        self.urgencia = tema.lista(linha, list(carregar_config_flowup()["prioridades"]), state="readonly")
+        self.urgencia.grid(row=1, column=1, sticky="ew", padx=(6, 0))
         tema.rotulo(d, "Observações da triagem").grid(row=12, column=0, sticky="w", padx=16, pady=(10, 2))
         self.obs = tema.caixa_texto(d, 90)
         self.obs.grid(row=13, column=0, sticky="ew", padx=16)
@@ -103,7 +109,7 @@ class TelaChamados(customtkinter.CTkFrame):
         acoes.grid(row=15, column=0, sticky="ew", padx=16, pady=(12, 16))
         self.b_salvar = tema.botao(acoes, "Salvar", self.salvar, width=110)
         self.b_salvar.pack(side="left")
-        self.b_excluir = tema.botao(acoes, "Excluir", self.excluir, tipo="perigo", width=90)
+        self.b_excluir = tema.botao(acoes, "Excluir", self.excluir, tipo="perigo", width=100)
         self.b_excluir.pack(side="right")
         self._habilitar(False)
 
@@ -179,6 +185,7 @@ class TelaChamados(customtkinter.CTkFrame):
         except ValueError:
             self.entrega.set_date(date.today())
         self.status.set(c.get("status") or self.app.status_nomes[0])
+        self.urgencia.set(c.get("urgencia") or "")
         self.obs.delete("1.0", "end")
         self.obs.insert("1.0", c.get("observacoes") or "")
         tarefa = c.get("flowup_task_id")
@@ -221,7 +228,7 @@ class TelaChamados(customtkinter.CTkFrame):
 
     def _habilitar(self, ativo):
         estado = "normal" if ativo else "disabled"
-        for w in (self.designado, self.responsavel, self.status):
+        for w in (self.designado, self.responsavel, self.status, self.urgencia):
             w.configure(state="readonly" if ativo else "disabled")
         self.b_salvar.configure(state=estado)
         self.entrega.configure(state=estado)
@@ -238,7 +245,8 @@ class TelaChamados(customtkinter.CTkFrame):
             return
         ok = atualizar_chamado_db(protocolo, self.designado.get(), responsavel,
                                   self.entrega.get_date().strftime("%Y-%m-%d"), self.status.get(),
-                                  self.obs.get("1.0", "end-1c").strip(), usuario_atual())
+                                  self.obs.get("1.0", "end-1c").strip(), usuario_atual(),
+                                  urgencia=self.urgencia.get() or None)
         if not ok:
             messagebox.showerror("Erro no banco de dados", "Não foi possível salvar o chamado.")
             return
