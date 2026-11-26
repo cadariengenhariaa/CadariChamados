@@ -7,21 +7,29 @@ Tudo o que muda de ambiente para ambiente, ou ao longo do tempo, fica fora do c�
 Definida em `src/chamados/config.py`:
 
 ```python
-PASTA_DADOS_PADRAO = r"Z:\Desenvolvimento\Dados\Chamados"
+AMBIENTES = {
+    "producao": {"nome": "Produção", "pasta_dados": r"Z:\Desenvolvimento\Dados\Chamados"},
+    "testes": {"nome": "Testes", "pasta_dados": r"Z:\Desenvolvimento\Dados\Chamados_Testes"},
+}
 ```
+
+Cada ambiente tem a própria pasta. O exe usa o ambiente gravado na geração; o código usa Testes, a não ser com `CHAMADOS_AMBIENTE=producao`. Detalhes em [ambientes.md](ambientes.md).
 
 Dentro dela ficam `entrada\` (`config.json` e `nomes_equipe.csv`, o que alimenta o programa) e `saida\` (`chamados.db`, `anexos\` e `logs\`, o que o programa produz). Para testes, crie as duas subpastas na pasta local.
 
-Se a pasta mudar de lugar na rede, altere essa linha, recompile e distribua o exe novo. Para testes, a variável de ambiente `CHAMADOS_PASTA_DADOS` substitui o padrão sem mexer no código.
+Se a pasta mudar de lugar na rede, altere o dicionário, recompile e distribua o exe novo. A variável de ambiente `CHAMADOS_PASTA_DADOS` substitui a pasta do ambiente sem mexer no código (cópia local).
 
 | Variável de ambiente | Uso |
 |---|---|
-| `CHAMADOS_PASTA_DADOS` | Usa outra pasta de dados (testes, homologação) |
+| `CHAMADOS_AMBIENTE` | Ambiente ao rodar pelo código: `testes` (padrão) ou `producao`. O exe ignora esta variável |
+| `CHAMADOS_PASTA_DADOS` | Usa outra pasta de dados (cópia local) |
 | `CHAMADOS_FLOWUP_TOKEN` | Usa outro token sem editar o `config.json` |
 
 ## config.json
 
-Fica em `entrada\` na pasta de dados e **não vai para o GitHub**. O modelo está em `config.example.json` na raiz do repositório, com o token vazio (token vazio = integração desligada).
+Fica em `entrada\` na pasta de dados de cada ambiente e **não vai para o GitHub**. O modelo está em `config.example.json` na raiz do repositório, com o token vazio (token vazio = integração desligada) e `"ambiente": "testes"`.
+
+O campo `ambiente`, no topo do arquivo (fora de `flowup`), diz de qual ambiente é a pasta: `testes` ou `producao`. Sem ele, vale `producao`. O programa não abre se o campo não combinar com o exe (ver [ambientes.md](ambientes.md#trava-contra-o-ambiente-errado)).
 
 ```json
 {
@@ -52,7 +60,7 @@ Fica em `entrada\` na pasta de dados e **não vai para o GitHub**. O modelo est�
 | `versao_api` | Versão usada nos endereços (`/v1/Task/Create`) | `v1` |
 | `token` | Token de acesso à API (ver abaixo) | só no arquivo da rede |
 | `projeto_id` | Projeto onde as tarefas são criadas | 151 (SETOR DE QUALIDADE) |
-| `quadro_id` | Quadro dentro do projeto | 2271 (CHAMADOS e PROTOCOLOS) |
+| `quadro_id` | Quadro dentro do projeto | 2271 (CHAMADOS e PROTOCOLOS); em Testes, 2815 (TESTES GERAL, projeto 1273) |
 | `tag` | Etiqueta aplicada a toda tarefa | 286, "Chamados" |
 | `seguidores_fixos` | IDs de usuários que seguem todas as tarefas, além do solicitante | `[10]` (Renata) |
 | `status` | Status do quadro e seus IDs, usados quando o FlowUp não responde na abertura | ver tabela em [arquitetura.md](arquitetura.md#status) |

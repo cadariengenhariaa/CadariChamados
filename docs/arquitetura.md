@@ -30,13 +30,13 @@ flowchart LR
 | Arquivo | Responsabilidade |
 |---|---|
 | `src/chamados/__main__.py` | Ponto de entrada (`python -m chamados`). Fecha a tela do PyInstaller, configura o log e abre a janela principal; erros antes da janela abrir aparecem numa caixa de diálogo. |
-| `src/chamados/config.py` | Local da pasta de dados, leitura do `config.json`, valores padrão do FlowUp e configuração do log. |
+| `src/chamados/config.py` | Ambiente (Testes ou Produção) e trava contra o ambiente errado, local da pasta de dados, leitura do `config.json`, valores padrão do FlowUp e configuração do log. |
 | `src/chamados/categorias.py` | Categorias e assuntos do formulário (e do filtro da lista). |
 | `src/chamados/database.py` | Todas as consultas ao SQLite. Nenhum outro módulo escreve SQL. |
 | `src/chamados/equipe.py` | Sincroniza o `nomes_equipe.csv` com os usuários ativos do FlowUp a cada abertura. |
 | `src/chamados/flowup_api.py` | Chamadas HTTP ao FlowUp. Trata redirecionamento, token recusado e falta de conexão e devolve mensagens curtas. |
-| `src/chamados/servico.py` | Regras da integração: montar os dados, criar ou atualizar a tarefa, excluir chamado e tarefa. |
-| `src/chamados/verificacao.py` | Verificação do computador: pasta da rede, gravação, banco, lista da equipe, configuração e conexão com o FlowUp. |
+| `src/chamados/servico.py` | Regras da integração: montar os dados (título com `[TESTE]` no ambiente de Testes), criar ou atualizar a tarefa, excluir chamado e tarefa. |
+| `src/chamados/verificacao.py` | Verificação do computador: ambiente, pasta da rede, gravação, banco, lista da equipe, configuração e conexão com o FlowUp. |
 | `src/chamados/interface/app.py` | Janela principal: carregamento em segundo plano, topo com abas, tema escuro, zoom e botão "Verificar computador". |
 | `src/chamados/interface/carregamento.py` | Tela de carregamento com a barra de progresso. |
 | `src/chamados/interface/janela_verificacao.py` | Resultado da verificação do computador, com relatório para copiar. |
@@ -45,6 +45,7 @@ flowchart LR
 | `src/chamados/interface/comum.py` | Funções usadas por mais de uma tela (datas, ordenação de nomes, campo de calendário). |
 | `src/chamados/interface/tema.py` | Identidade visual: cores (claro, escuro), fonte Franklin Gothic Book, título com listra, rodapé, botões e campos. |
 | `src/chamados/diagnostico_flowup.py` | Verificação da integração, para uso de quem mantém o sistema. Não faz parte do exe. Rodar com `scripts\diagnosticar_flowup.bat`. |
+| `src/chamados/atualizar_testes.py` | Copia os dados de Produção para Testes, apagando os vínculos com o FlowUp. Não faz parte do exe. Rodar com `scripts\atualizar_testes.bat`. |
 
 A regra de dependência é de cima para baixo: a interface usa o núcleo (`servico`, `database`, `equipe`, `verificacao`), o núcleo usa `flowup_api` e `config`, e nada do núcleo importa a interface. Assim os testes e o diagnóstico usam o núcleo sem abrir janela.
 
@@ -75,7 +76,7 @@ Lista com filtros por status, software, solicitante e responsável, botão "Ver 
 
 ### Pasta de dados
 
-Padrão: `Z:\Desenvolvimento\Dados\Chamados` (definido em `src/chamados/config.py`, pode ser trocado pela variável `CHAMADOS_PASTA_DADOS`). A pasta `Z:\Desenvolvimento\Dados` reúne os dados de vários programas, um por subpasta. Dentro da pasta do Chamados, o que alimenta o programa fica separado do que ele produz:
+Produção: `Z:\Desenvolvimento\Dados\Chamados`; Testes: `Z:\Desenvolvimento\Dados\Chamados_Testes` (definidas em `AMBIENTES`, em `src/chamados/config.py`; a variável `CHAMADOS_PASTA_DADOS` troca a pasta por uma cópia local). Ver [ambientes.md](ambientes.md). A pasta `Z:\Desenvolvimento\Dados` reúne os dados de vários programas, um por subpasta. Dentro da pasta do Chamados, o que alimenta o programa fica separado do que ele produz:
 
 | Item | Conteúdo |
 |---|---|

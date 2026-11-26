@@ -21,6 +21,65 @@ from chamados import __version__
 
 VERSAO = __version__  # a versão fica só em chamados/__init__.py
 
+# Raiz do repositório (src/chamados/config.py -> três níveis acima). No exe, o
+# PyInstaller descompacta os recursos em sys._MEIPASS.
+PASTA_BASE = getattr(sys, "_MEIPASS", os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+
+# ---------------------------------------------------------------------------
+# Ambientes (Testes e Produção)
+# ---------------------------------------------------------------------------
+# Cada ambiente tem a própria pasta de dados (banco, anexos, logs, config.json) e,
+# pelo config.json, o próprio quadro no FlowUp. Fluxo de publicação: docs/ambientes.md
+#   exe            o ambiente é gravado na hora de gerar o exe
+#                  (scripts\gerar_executavel.bat testes|producao) e não muda depois.
+#   código-fonte   variável CHAMADOS_AMBIENTE; sem ela, Testes. Assim, rodar o
+#                  código nunca grava na produção por engano.
+AMBIENTES = {
+    "producao": {"nome": "Produção", "pasta_dados": r"Z:\Desenvolvimento\Dados\Chamados"},
+    "testes": {"nome": "Testes", "pasta_dados": r"Z:\Desenvolvimento\Dados\Chamados_Testes"},
+}
+AMBIENTE_PADRAO_CODIGO = "testes"
+ARQUIVO_AMBIENTE_EXE = "ambiente.txt"  # criado pelo .spec dentro do exe
+QUADRO_PRODUCAO = 2271  # quadro CHAMADOS e PROTOCOLOS: o ambiente de Testes nunca pode usar
+
+
+def _ambiente_do_exe():
+    """Ambiente gravado no exe, ou None quando o programa roda pelo código."""
+    if not getattr(sys, "frozen", False):
+        return None
+    try:
+        with open(os.path.join(PASTA_BASE, ARQUIVO_AMBIENTE_EXE), "r", encoding="utf-8") as f:
+            return f.read().strip().lower()
+    except OSError:
+        return "producao"  # exe gerado antes da 2.4.0 (sem o arquivo) só existia em produção
+
+
+def escolher_ambiente():
+    """Nome do ambiente em uso ("producao" ou "testes"). Valor desconhecido vira Testes, o lado seguro."""
+    nome = _ambiente_do_exe() or (os.environ.get("CHAMADOS_AMBIENTE") or AMBIENTE_PADRAO_CODIGO).strip().lower()
+    return nome if nome in AMBIENTES else "testes"
+
+
+AMBIENTE = escolher_ambiente()
+NOME_AMBIENTE = AMBIENTES[AMBIENTE]["nome"]
+EM_TESTES = AMBIENTE == "testes"
+
+MARCA_TESTE = "[TESTE]"  # vai no título dos chamados e das tarefas criados no ambiente de Testes
+
+
+def marcar_teste(titulo, em_testes=None):
+    """
+    Põe "[TESTE] " no começo do título quando o programa está no ambiente de Testes.
+    Não repete a marca se ela já estiver lá. Em Produção, devolve o título como veio.
+    """
+    if not (EM_TESTES if em_testes is None else em_testes):
+        return titulo
+    texto = str(titulo or "").strip()
+    if texto.upper().startswith(MARCA_TESTE):
+        return texto
+    return f"{MARCA_TESTE} {texto}".strip()
+
 # ---------------------------------------------------------------------------
 # Pasta de dados compartilhada
 # ---------------------------------------------------------------------------
@@ -28,10 +87,9 @@ VERSAO = __version__  # a versão fica só em chamados/__init__.py
 # dela, os dados ficam separados em duas subpastas:
 #   entrada\  o que alimenta o programa (config.json, nomes_equipe.csv)
 #   saida\    o que o programa produz (chamados.db, anexos\, logs\)
-# Fica na rede e NUNCA vai para o GitHub. Para testar sem mexer na produção,
-# defina a variável de ambiente CHAMADOS_PASTA_DADOS com uma pasta local
-# (ver docs/desenvolvimento.md).
-PASTA_DADOS_PADRAO = r"Z:\Desenvolvimento\Dados\Chamados"
+# Fica na rede e NUNCA vai para o GitHub. A pasta vem do ambiente; para testar
+# com uma cópia local, defina a variável CHAMADOS_PASTA_DADOS (ver docs/desenvolvimento.md).
+PASTA_DADOS_PADRAO = AMBIENTES[AMBIENTE]["pasta_dados"]
 PASTA_DADOS = os.environ.get("CHAMADOS_PASTA_DADOS") or PASTA_DADOS_PADRAO
 
 PASTA_ENTRADA = os.path.join(PASTA_DADOS, "entrada")
@@ -42,11 +100,6 @@ ARQUIVO_EQUIPE = os.path.join(PASTA_ENTRADA, "nomes_equipe.csv")
 ARQUIVO_BANCO = os.path.join(PASTA_SAIDA, "chamados.db")
 PASTA_ANEXOS = os.path.join(PASTA_SAIDA, "anexos")
 PASTA_LOGS = os.path.join(PASTA_SAIDA, "logs")
-
-
-# Raiz do repositório (src/chamados/config.py -> três níveis acima). No exe, o
-# PyInstaller descompacta os recursos em sys._MEIPASS.
-PASTA_BASE = getattr(sys, "_MEIPASS", os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 
 def resource_path(relative_path):
@@ -130,6 +183,53 @@ def carregar_config_flowup():
         cfg["token"] = token_ambiente
     cfg["token"] = (cfg.get("token") or "").strip()
     return cfg
+
+
+def ambiente_do_config():
+    """
+    Ambiente declarado no campo "ambiente" do config.json.
+
+    Sem o campo, vale "producao" (o config.json de produção é anterior aos ambientes).
+    Devolve None se o config.json não existir ou não puder ser lido.
+    """
+    try:
+        with open(ARQUIVO_CONFIG, "r", encoding="utf-8-sig") as f:
+            dados = json.load(f)
+    except (OSError, ValueError):
+        return None
+    if not isinstance(dados, dict):
+        return None
+    return str(dados.get("ambiente") or "producao").strip().lower()
+
+
+def _mesma_pasta(a, b):
+    return os.path.normcase(os.path.normpath(a)) == os.path.normcase(os.path.normpath(b))
+
+
+def conferir_ambiente():
+    """
+    Confere se a pasta de dados e o config.json combinam com o ambiente do programa.
+
+    Devolve None quando está tudo certo, ou um texto explicando o problema. Com problema,
+    o programa não abre: é a trava que impede o exe de Testes de gravar nos dados reais
+    (e o de Produção de usar os dados de teste).
+    """
+    pasta_producao = AMBIENTES["producao"]["pasta_dados"]
+    if EM_TESTES and _mesma_pasta(PASTA_DADOS, pasta_producao):
+        return (f"O programa de Testes está apontando para a pasta de dados de Produção ({pasta_producao}). "
+                "Confira a variável CHAMADOS_PASTA_DADOS.")
+    declarado = ambiente_do_config()
+    if declarado is not None and declarado != AMBIENTE:
+        nome_declarado = AMBIENTES.get(declarado, {}).get("nome", declarado)
+        return (f"Este programa é do ambiente {NOME_AMBIENTE}, mas o config.json da pasta de dados "
+                f"({ARQUIVO_CONFIG}) é do ambiente {nome_declarado}. Use o executável do ambiente certo "
+                "ou corrija o campo \"ambiente\" do config.json.")
+    if EM_TESTES:
+        cfg = carregar_config_flowup()
+        if cfg.get("token") and int(cfg.get("quadro_id") or 0) == QUADRO_PRODUCAO:
+            return (f"O config.json de Testes aponta para o quadro de Produção do FlowUp ({QUADRO_PRODUCAO}). "
+                    "Troque o quadro_id pelo quadro de testes (docs/ambientes.md) ou deixe o token vazio.")
+    return None
 
 
 # ---------------------------------------------------------------------------

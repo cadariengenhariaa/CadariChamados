@@ -10,7 +10,7 @@ import html
 import logging
 from datetime import datetime
 
-from chamados.config import carregar_config_flowup
+from chamados.config import MARCA_TESTE, carregar_config_flowup, marcar_teste
 from chamados.database import buscar_chamado_por_protocolo, excluir_chamado_db, salvar_flowup_id_db
 from chamados.flowup_api import atualizar_task_flowup, criar_task_flowup, excluir_task_flowup, extrair_task_id
 
@@ -62,6 +62,18 @@ def descricao_html(chamado):
     return "".join(partes)
 
 
+def titulo_tarefa(chamado):
+    """
+    Título da tarefa no FlowUp: "Chamado C001 - <tema>".
+    No ambiente de Testes vira "[TESTE] Chamado C001 - <tema>", com a marca no começo para
+    aparecer no quadro, inclusive nos chamados copiados de Produção (que não têm a marca no tema).
+    """
+    tema = str(chamado.get("tema") or "").strip()
+    if tema.upper().startswith(MARCA_TESTE):
+        tema = tema[len(MARCA_TESTE):].strip()  # a marca vai uma vez só, no começo do título
+    return marcar_teste(f"Chamado {chamado.get('protocolo')} - {tema}")
+
+
 def montar_payload(chamado, nomes_map, cfg=None):
     """
     Monta o payload de criação/atualização a partir do chamado gravado no banco.
@@ -93,7 +105,7 @@ def montar_payload(chamado, nomes_map, cfg=None):
     # Campos fixos herdados da integração original e aceitos pela API desde jan/2026
     payload = {
         "Id": chamado.get("flowup_task_id") or 0,
-        "Title": f"Chamado {chamado.get('protocolo')} - {chamado.get('tema')}",
+        "Title": titulo_tarefa(chamado),
         "Description": descricao_html(chamado),
         "Comments": [],
         "IsGantt": True,

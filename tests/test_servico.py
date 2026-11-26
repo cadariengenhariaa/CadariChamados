@@ -1,6 +1,7 @@
 """Testes de chamados.servico: montagem da tarefa enviada ao FlowUp."""
 
 import unittest
+from unittest import mock
 
 from chamados import config, servico
 
@@ -26,6 +27,20 @@ class TestServico(unittest.TestCase):
         chamado = {"protocolo": "C102", "tema": "T", "nome_solicitante": "Ana", "responsavel": "Beto"}
         p = servico.montar_payload(chamado, {"Ana": 1, "Beto": 2}, config.carregar_config_flowup())
         self.assertNotIn("Priority", p)
+
+    def test_tarefa_em_testes_tem_marca_no_comeco_do_titulo(self):
+        chamado = {"protocolo": "C103", "tema": "Revit travando", "nome_solicitante": "Ana", "responsavel": "Beto"}
+        p = servico.montar_payload(chamado, {"Ana": 1, "Beto": 2}, config.carregar_config_flowup())
+        self.assertEqual(p["Title"], "[TESTE] Chamado C103 - Revit travando")
+
+    def test_tema_ja_marcado_nao_repete_a_marca(self):
+        chamado = {"protocolo": "C104", "tema": "[TESTE] Revit travando"}
+        self.assertEqual(servico.titulo_tarefa(chamado), "[TESTE] Chamado C104 - Revit travando")
+
+    def test_tarefa_em_producao_sem_marca(self):
+        with mock.patch.object(config, "EM_TESTES", False):
+            self.assertEqual(servico.titulo_tarefa({"protocolo": "C105", "tema": "Revit travando"}),
+                             "Chamado C105 - Revit travando")
 
     def test_responsavel_fora_da_lista(self):
         with self.assertRaises(servico.ErroIntegracao):

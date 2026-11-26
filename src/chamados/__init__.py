@@ -9,6 +9,7 @@ Núcleo (sem interface):
     flowup_api.py .... chamadas HTTP à API do FlowUp
     servico.py ....... regras da integração (criar, atualizar e excluir tarefas)
     verificacao.py ... verificação do computador
+    atualizar_testes.py ... copia os dados de Produção para Testes (python -m chamados.atualizar_testes)
     diagnostico_flowup.py ... diagnóstico da integração (python -m chamados.diagnostico_flowup)
 
 Interface (CustomTkinter): pasta interface/.
@@ -16,4 +17,4 @@ Ponto de entrada: __main__.py (python -m chamados).
 Visão geral: docs/arquitetura.md
 """
 
-__version__ = "2.3.3"
+__version__ = "2.4.0"

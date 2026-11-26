@@ -20,7 +20,8 @@ from tkinter import messagebox
 import customtkinter
 
 from chamados import verificacao
-from chamados.config import FLOWUP_PADRAO, VERSAO, carregar_config_flowup, resource_path, usuario_atual
+from chamados.config import (EM_TESTES, FLOWUP_PADRAO, VERSAO, carregar_config_flowup, resource_path,
+                             usuario_atual)
 from chamados.database import criar_tabela
 from chamados.equipe import carregar_equipe
 from chamados.servico import carregar_status
@@ -48,7 +49,7 @@ class App(customtkinter.CTk):
         except (TypeError, ValueError):
             tema.escala = 1.0
         customtkinter.set_widget_scaling(tema.escala)
-        self.title(f"Controle de Chamados (v{VERSAO})")
+        self.title(f"Controle de Chamados (v{VERSAO})" + ("  [TESTES]" if EM_TESTES else ""))
         # Tamanho em pixels de tela; o CustomTkinter aplica o DPI do Windows e o zoom por cima.
         escala_janela = customtkinter.ScalingTracker.get_window_scaling(self)
         largura = min(1480, int(self.winfo_screenwidth() / escala_janela) - 60)
@@ -81,7 +82,7 @@ class App(customtkinter.CTk):
         """Verifica o computador e carrega os dados. Roda em segundo plano; nada aqui pode travar a tela."""
         nomes_map = {}
         try:
-            etapas = {"sistema": "Verificando o computador", "pasta_dados": "Conectando à pasta da rede",
+            etapas = {"sistema": "Verificando o computador", "ambiente": "Conferindo o ambiente", "pasta_dados": "Conectando à pasta da rede",
                       "gravacao": "Conferindo permissão de gravação", "banco": "Abrindo o banco de chamados",
                       "lista_equipe": "Lendo a lista da equipe", "configuracao": "Lendo a configuração",
                       "conexao_flowup": "Testando a conexão com o FlowUp"}
@@ -186,6 +187,13 @@ class App(customtkinter.CTk):
 
         self.marcador = customtkinter.CTkFrame(self, height=3, fg_color=tema.DOURADO, corner_radius=0)
         self.marcador.grid(row=1, column=0, sticky="ew")
+        if EM_TESTES:
+            # Faixa do ambiente de Testes: fica por cima do marcador dourado, para não haver dúvida
+            faixa = customtkinter.CTkFrame(self, fg_color=tema.COR_TESTES, corner_radius=0, height=26)
+            faixa.grid(row=1, column=0, sticky="ew")
+            customtkinter.CTkLabel(faixa, text="AMBIENTE DE TESTES  |  dados e tarefas de teste, não usar para "
+                                              "chamados reais", text_color=tema.BRANCO,
+                                   font=tema.fonte(10, "bold")).pack(pady=2)
 
         corpo = customtkinter.CTkFrame(self, fg_color=tema.COR["fundo"], corner_radius=0)
         corpo.grid(row=2, column=0, sticky="nsew")

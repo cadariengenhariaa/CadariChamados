@@ -27,11 +27,13 @@ O `.venv` é de cada computador e não vai para o GitHub. Se der problema, apagu
 
 ## Rodar sem mexer nos dados reais
 
-O programa usa a pasta de dados do Z: por padrão. Para testar, crie uma cópia e aponte para ela:
+A partir do código, o programa usa o **ambiente de Testes** (`Z:\Desenvolvimento\Dados\Chamados_Testes`, quadro TESTES GERAL no FlowUp). Na maior parte das vezes basta rodar `scripts\executar.bat`. Para trazer uma cópia recente dos dados reais para Testes: `scripts\atualizar_testes.bat` (ver [ambientes.md](ambientes.md)).
+
+Para trabalhar numa cópia só sua, sem rede:
 
 1. Crie `C:\temp\chamados_teste`.
 2. Crie as subpastas `entrada` e `saida` e copie para lá `nomes_equipe.csv` (para `entrada`) e `chamados.db` (para `saida`) da pasta de dados do Z:.
-3. Copie também o `config.example.json` do repositório, renomeando para `config.json`, e deixe o token vazio. Assim a integração fica desligada e nenhum teste cria tarefa de verdade no FlowUp. Se precisar testar a integração, use o token real, mas saiba que as tarefas serão criadas no quadro de produção (apague-as depois) ou peça um quadro de testes e troque o `quadro_id`.
+3. Copie também o `config.example.json` do repositório para `entrada`, renomeando para `config.json`, e deixe o token vazio. Assim a integração fica desligada. Para testar a integração, use o ambiente de Testes na rede, que já aponta para o quadro TESTES GERAL.
 4. No Prompt de Comando, na pasta do repositório:
 
 ```bat
@@ -51,13 +53,13 @@ Os testes ficam em `tests\`, um arquivo por módulo do núcleo (`test_config.py`
 
 Para ver quanto do código os testes cobrem: `scripts\cobertura.bat` (relatório em `docs\gerado\cobertura\index.html`).
 
-Antes de distribuir, faça também o teste manual com a cópia dos dados:
+Antes de distribuir, faça também o teste manual no ambiente de Testes (checklist completo em [ambientes.md](ambientes.md#checklist-de-validação-em-testes)):
 
 - [ ] abrir um chamado com imagem;
-- [ ] designar esse chamado (com a integração desligada aparece o aviso de token ausente, o que é esperado);
+- [ ] designar esse chamado e conferir a tarefa no quadro TESTES GERAL;
 - [ ] ver a lista, filtrar e exportar CSV;
 - [ ] finalizar e excluir um chamado de teste;
-- [ ] `scripts\diagnosticar_flowup.bat` sem erros na pasta real (ele é somente leitura).
+- [ ] `scripts\diagnosticar_flowup.bat` sem erros em Testes e, com `set CHAMADOS_AMBIENTE=producao`, em Produção (ele é somente leitura).
 
 ## Gerar o executável
 
@@ -65,14 +67,19 @@ Antes de distribuir, faça também o teste manual com a cópia dos dados:
 2. Na pasta do projeto:
 
 ```bat
-scripts\gerar_executavel.bat
+scripts\gerar_executavel.bat testes
+scripts\gerar_executavel.bat producao
 ```
 
-3. O resultado é `dist\Abertura de Chamados.exe` (cerca de 35 MB) e `dist\CadariChamados-vX.Y.Z.zip`, o pacote para anexar na Release do GitHub. As pastas `build\` e `dist\` são temporárias e não vão para o GitHub.
+   O argumento é obrigatório: ele grava o ambiente dentro do exe. Gere `testes` a partir da `develop` e `producao` a partir da `main`.
+
+3. O resultado é `dist\Abertura de Chamados (TESTES).exe` ou, em Produção, `dist\Abertura de Chamados.exe` (cerca de 35 MB) e `dist\CadariChamados-vX.Y.Z.zip`, o pacote para anexar na Release do GitHub. As pastas `build\` e `dist\` são temporárias e não vão para o GitHub.
 
 O `.bat` usa a receita `scripts\abertura_de_chamados.spec`, que gera um `.exe` único com o pacote `chamados`, a pasta `assets` (imagens), o ícone, a tela de abertura e a importação oculta exigida pelo tkcalendar. Use sempre o `.bat`, em vez de montar o comando do PyInstaller à mão.
 
 ## Distribuir para a equipe
+
+Só distribua depois de validar a versão no ambiente de Testes ([ambientes.md](ambientes.md#fluxo-de-publicação-testes--produção)). O exe de Testes vai para `Z:\Biblioteca\Padronização\Cadari\Executaveis\Testes`, só para o TI.
 
 O exe não se atualiza sozinho. Cada pessoa roda uma cópia, então a versão nova precisa chegar a todos:
 
@@ -87,12 +94,13 @@ Para voltar atrás, distribua o exe anterior. O banco é o mesmo para todas as v
 
 Segue o Processo de desenvolvimento do TI Cadari (detalhes no [README](../README.md#como-contribuir)):
 
-1. Ticket no Jira em **Desenvolvimento**.
-2. Branch a partir da `develop`: `feature/CHAVE-NN-descricao-curta`, `fix/...` ou `refactor/...`.
-3. Commits no padrão `[CHAVE-NN] tipo: título no infinitivo`.
-4. `scripts\testar.bat` passando e teste manual com a cópia dos dados.
+1. Chave da tarefa: `C0xx` para chamado (o protocolo do chamado) ou `Sxx` para tarefa da Sprint.
+2. Branch a partir da `develop`: `feature/Sxx-descricao-curta`, `fix/C0xx-descricao-curta` ou `refactor/...`.
+3. Commits no padrão `[CHAVE] tipo: título no infinitivo`.
+4. `scripts\testar.bat` passando e teste manual pelo código (ambiente de Testes).
 5. PR para a `develop`, revisão de outra pessoa e **squash and merge**.
-6. Para distribuir: PR da `develop` para a `main`, tag `vX.Y.Z`, Release no GitHub com o `.zip` anexado e cópia do exe na rede.
+6. Exe de Testes gerado da `develop` e checklist de validação ([ambientes.md](ambientes.md)).
+7. Para distribuir: PR da `develop` para a `main`, tag `vX.Y.Z`, Release no GitHub com o `.zip` anexado e cópia do exe de Produção na rede.
 
 Antes de cada commit, confira o `git status`: a lista não pode ter `chamados.db`, `config.json`, `nomes_equipe.csv` nem nada das pastas `entrada` e `saida`. O `.gitignore` já bloqueia esses arquivos.
 
