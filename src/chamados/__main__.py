@@ -11,7 +11,13 @@ import logging
 import sys
 import traceback
 
-from chamados.config import NOME_AMBIENTE, PASTA_DADOS, VERSAO, conferir_ambiente, configurar_log, usuario_atual
+from chamados.config import (AMBIENTE, EM_TESTES, NOME_AMBIENTE, PASTA_DADOS, VERSAO, conferir_ambiente,
+                             configurar_log, usuario_atual)
+from chamados.instancia import InstanciaUnica, trazer_janela_para_frente
+
+MENSAGEM_JA_ABERTO = ("O Controle de Chamados já está aberto neste computador.\n\n"
+                      "Use a janela que já está aberta. Se ela ainda estiver carregando, "
+                      "aguarde alguns segundos.")
 
 
 def _registrar_erro_fatal(exc_type, exc, tb):
@@ -43,6 +49,13 @@ def main() -> int:
         logging.critical("Ambiente incorreto: %s", problema)
         _mostrar_erro(f"O Controle de Chamados não pode abrir.\n\n{problema}\n\nLog: {arquivo_log}")
         return 1
+    instancia = InstanciaUnica(AMBIENTE)
+    if not instancia.adquirir():
+        # Programa já aberto: traz a janela existente para frente e não abre outra
+        logging.info("Abertura recusada: o programa já está aberto (ambiente %s).", NOME_AMBIENTE)
+        trazer_janela_para_frente(EM_TESTES)
+        _avisar_ja_aberto()
+        return 0
     try:
         from chamados.interface.app import App
         App().mainloop()
@@ -52,7 +65,19 @@ def main() -> int:
         _mostrar_erro("O Controle de Chamados não conseguiu abrir.\n\n"
                       f"{traceback.format_exc(limit=1)}\nLog: {arquivo_log}")
         raise
+    finally:
+        instancia.liberar()
     return 0
+
+
+def _avisar_ja_aberto():
+    """Aviso com a identidade visual da Cadari; sem a interface, cai na caixa do Windows."""
+    try:
+        from chamados.interface.dialogos import mensagem_sem_janela
+        mensagem_sem_janela("Programa já aberto", MENSAGEM_JA_ABERTO)
+    except Exception:
+        logging.warning("Aviso de programa já aberto sem a interface:\n%s", traceback.format_exc())
+        _mostrar_erro(MENSAGEM_JA_ABERTO)
 
 
 def _mostrar_erro(texto):

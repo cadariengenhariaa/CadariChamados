@@ -4,7 +4,7 @@ import csv
 import logging
 import os
 from datetime import date, datetime
-from tkinter import filedialog, messagebox, ttk
+from tkinter import filedialog, ttk
 
 import customtkinter
 
@@ -12,7 +12,7 @@ from chamados.categorias import FERRAMENTAS
 from chamados.config import carregar_config_flowup, resolver_caminho_dados, usuario_atual
 from chamados.database import atualizar_chamado_db, buscar_chamado_por_protocolo, buscar_todos_os_chamados
 from chamados.servico import ErroIntegracao, excluir_chamado, sincronizar_tarefa
-from chamados.interface import tema
+from chamados.interface import dialogos, tema
 from chamados.interface.comum import chave_ordenacao, data_brasil, seletor_data
 
 
@@ -241,14 +241,14 @@ class TelaChamados(customtkinter.CTkFrame):
         protocolo = self.atual["protocolo"]
         responsavel = self.responsavel.get()
         if responsavel not in self.app.nomes_map:
-            messagebox.showerror("Responsável", "Escolha o responsável na lista. A tarefa do FlowUp precisa de um.")
+            dialogos.mensagem("Responsável", "Escolha o responsável na lista. A tarefa do FlowUp precisa de um.")
             return
         ok = atualizar_chamado_db(protocolo, self.designado.get(), responsavel,
                                   self.entrega.get_date().strftime("%Y-%m-%d"), self.status.get(),
                                   self.obs.get("1.0", "end-1c").strip(), usuario_atual(),
                                   urgencia=self.urgencia.get() or None)
         if not ok:
-            messagebox.showerror("Erro no banco de dados", "Não foi possível salvar o chamado.")
+            dialogos.mensagem("Erro no banco de dados", "Não foi possível salvar o chamado.")
             return
         self._sincronizar(protocolo, f"Chamado {protocolo} salvo.")
 
@@ -258,7 +258,7 @@ class TelaChamados(customtkinter.CTkFrame):
         except ErroIntegracao as e:
             logging.error("Integração (%s): %s", protocolo, e)
             self.app.avisar(f"{prefixo} Tarefa do FlowUp pendente.")
-            messagebox.showerror("Erro de integração", f"{prefixo} Mas a integração com o FlowUp falhou:\n\n{e}\n\n"
+            dialogos.mensagem("Erro de integração", f"{prefixo} Mas a integração com o FlowUp falhou:\n\n{e}\n\n"
                                                        "Depois de resolver, salve de novo para tentar outra vez.")
         self.recarregar(protocolo)
 
@@ -270,18 +270,19 @@ class TelaChamados(customtkinter.CTkFrame):
         texto = f"Excluir definitivamente o chamado {protocolo} ({self.atual['tema']})?"
         if tarefa:
             texto += f"\n\nA tarefa {tarefa} também será excluída do FlowUp."
-        if not messagebox.askyesno("Excluir chamado", texto + "\n\nEssa ação não pode ser desfeita.", icon="warning"):
+        if not dialogos.perguntar("Excluir chamado", texto + "\n\nEssa ação não pode ser desfeita.",
+                                  sim="Excluir", perigo=True):
             return
         try:
             self.app.avisar(excluir_chamado(protocolo))
         except ErroIntegracao as e:
-            messagebox.showerror("Excluir chamado", str(e))
+            dialogos.mensagem("Excluir chamado", str(e))
         self.atual = None
         self.recarregar()
 
     def exportar(self):
         if not self.dados:
-            messagebox.showinfo("Exportar", "Não há chamados com os filtros atuais.")
+            dialogos.mensagem("Exportar", "Não há chamados com os filtros atuais.")
             return
         caminho = filedialog.asksaveasfilename(defaultextension=".csv", title="Salvar relatório de chamados",
                                                filetypes=[("Arquivo CSV", "*.csv")])
@@ -296,4 +297,4 @@ class TelaChamados(customtkinter.CTkFrame):
                     w.writerow([c[k] for k in cab])
             self.app.avisar(f"{len(self.dados)} chamado(s) exportado(s).")
         except OSError as e:
-            messagebox.showerror("Exportar", f"Não foi possível salvar o arquivo:\n{e}")
+            dialogos.mensagem("Exportar", f"Não foi possível salvar o arquivo:\n{e}")

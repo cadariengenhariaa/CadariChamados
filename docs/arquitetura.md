@@ -29,17 +29,19 @@ flowchart LR
 
 | Arquivo | Responsabilidade |
 |---|---|
-| `src/chamados/__main__.py` | Ponto de entrada (`python -m chamados`). Fecha a tela do PyInstaller, configura o log e abre a janela principal; erros antes da janela abrir aparecem numa caixa de diálogo. |
+| `src/chamados/__main__.py` | Ponto de entrada (`python -m chamados`). Fecha a tela do PyInstaller, configura o log e abre a janela principal; erros antes da janela abrir aparecem numa caixa de diálogo. Não abre uma segunda vez (ver `instancia.py`). |
 | `src/chamados/config.py` | Ambiente (Testes ou Produção) e trava contra o ambiente errado, local da pasta de dados, leitura do `config.json`, valores padrão do FlowUp e configuração do log. |
 | `src/chamados/categorias.py` | Categorias e assuntos do formulário (e do filtro da lista). |
 | `src/chamados/database.py` | Todas as consultas ao SQLite. Nenhum outro módulo escreve SQL. |
 | `src/chamados/equipe.py` | Sincroniza o `nomes_equipe.csv` com os usuários ativos do FlowUp a cada abertura. |
 | `src/chamados/flowup_api.py` | Chamadas HTTP ao FlowUp. Trata redirecionamento, token recusado e falta de conexão e devolve mensagens curtas. |
 | `src/chamados/servico.py` | Regras da integração: montar os dados (título com `[TESTE]` no ambiente de Testes), criar ou atualizar a tarefa, excluir chamado e tarefa. |
-| `src/chamados/verificacao.py` | Verificação do computador: ambiente, pasta da rede, gravação, banco, lista da equipe, configuração e conexão com o FlowUp. |
+| `src/chamados/verificacao.py` | Verificação do computador: ambiente, pasta da rede, gravação, banco, lista da equipe, configuração e conexão com o FlowUp. Trava de uma verificação por vez (`iniciar_verificacao` / `concluir_verificacao`). |
+| `src/chamados/instancia.py` | Instância única: mutex do Windows por ambiente (Testes e Produção podem ficar abertos juntos, mas nenhum duas vezes) e busca da janela já aberta para trazê-la para frente. |
 | `src/chamados/interface/app.py` | Janela principal: carregamento em segundo plano, topo com abas, tema escuro, zoom e botão "Verificar computador". |
 | `src/chamados/interface/carregamento.py` | Tela de carregamento com a barra de progresso. |
-| `src/chamados/interface/janela_verificacao.py` | Resultado da verificação do computador, com relatório para copiar. |
+| `src/chamados/interface/janela_verificacao.py` | Resultado da verificação do computador, com relatório para copiar. Modal; ao fechar, libera uma nova verificação. |
+| `src/chamados/interface/dialogos.py` | Base das janelas secundárias (`JanelaModal`: bloqueia a janela de baixo até ser fechada) e caixas de mensagem e confirmação com a identidade visual da Cadari, no lugar das caixas do Windows. |
 | `src/chamados/interface/novo_chamado.py` | Aba "Novo chamado" (abertura e encaminhamento). |
 | `src/chamados/interface/lista_chamados.py` | Aba "Chamados" (lista, filtros, detalhes, excluir e exportar). |
 | `src/chamados/interface/comum.py` | Funções usadas por mais de uma tela (datas, ordenação de nomes, campo de calendário). |

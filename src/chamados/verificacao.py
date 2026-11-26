@@ -13,6 +13,7 @@ import os
 import platform
 import sqlite3
 import sys
+import threading
 import time
 from dataclasses import dataclass
 
@@ -21,6 +22,29 @@ from chamados.config import (ARQUIVO_BANCO, ARQUIVO_CONFIG, ARQUIVO_EQUIPE, NOME
 
 OK, AVISO, ERRO = "OK", "AVISO", "ERRO"
 TIMEOUT_REDE = 8  # segundos; na abertura não vale a pena esperar mais que isso pelo FlowUp
+
+MENSAGEM_EM_ANDAMENTO = "Já existe uma verificação em andamento. Finalize-a antes de iniciar uma nova."
+
+# Uma verificação por vez. Ela vale do clique (ou da abertura do programa) até a janela
+# de resultado ser fechada; enquanto isso, um novo pedido é recusado.
+_trava = threading.Lock()
+
+
+def iniciar_verificacao():
+    """Reserva a verificação. False se já existe outra em andamento."""
+    return _trava.acquire(blocking=False)
+
+
+def concluir_verificacao():
+    """Libera a verificação para uma nova (pode ser chamada mais de uma vez sem erro)."""
+    try:
+        _trava.release()
+    except RuntimeError:
+        pass
+
+
+def verificacao_em_andamento():
+    return _trava.locked()
 
 
 @dataclass
