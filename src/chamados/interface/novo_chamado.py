@@ -4,7 +4,7 @@ import logging
 import os
 import shutil
 from datetime import date
-from tkinter import filedialog, messagebox
+from tkinter import filedialog
 
 import customtkinter
 
@@ -12,7 +12,7 @@ from chamados.categorias import FERRAMENTAS
 from chamados.config import PASTA_ANEXOS, URGENCIA_PADRAO, carregar_config_flowup, usuario_atual
 from chamados.database import atualizar_caminho_imagem_db, atualizar_chamado_db, registrar_chamado_db
 from chamados.servico import ErroIntegracao, sincronizar_tarefa
-from chamados.interface import tema
+from chamados.interface import dialogos, tema
 from chamados.interface.comum import SEM_RESPONSAVEL, seletor_data
 
 
@@ -134,7 +134,7 @@ class TelaNovoChamado(customtkinter.CTkScrollableFrame):
         nome = self.solicitante.get()
         tema_txt = self.tema.get().strip()
         if nome not in self.app.nomes_map or not tema_txt:
-            messagebox.showerror("Campos obrigatórios", "Escolha o seu nome na lista e preencha o tema do chamado.")
+            dialogos.mensagem("Campos obrigatórios", "Escolha o seu nome na lista e preencha o tema do chamado.")
             return
         responsavel = self.responsavel.get()
         responsavel = "" if responsavel == SEM_RESPONSAVEL else responsavel
@@ -142,7 +142,7 @@ class TelaNovoChamado(customtkinter.CTkScrollableFrame):
         protocolo = registrar_chamado_db(nome, self.software.get(), self.ferramenta.get(), tema_txt,
                                          self.descricao.get("1.0", "end-1c").strip(), urgencia=self.urgencia.get())
         if not protocolo:
-            messagebox.showerror("Erro no banco de dados",
+            dialogos.mensagem("Erro no banco de dados",
                                  "Não foi possível registrar o chamado. Confira o acesso à pasta da rede.")
             return
 
@@ -151,7 +151,7 @@ class TelaNovoChamado(customtkinter.CTkScrollableFrame):
                 atualizar_caminho_imagem_db(protocolo, self._copiar_anexo(protocolo))
             except OSError as e:
                 logging.error("Anexo do %s não copiado: %s", protocolo, e)
-                messagebox.showwarning("Anexo", f"O chamado {protocolo} foi registrado, mas a imagem não pôde "
+                dialogos.mensagem("Anexo", f"O chamado {protocolo} foi registrado, mas a imagem não pôde "
                                                 f"ser copiada para a rede.\n\n{e}")
 
         texto = f"Chamado {protocolo} registrado."
@@ -163,7 +163,7 @@ class TelaNovoChamado(customtkinter.CTkScrollableFrame):
                 texto += " " + sincronizar_tarefa(protocolo, self.app.nomes_map)
             except ErroIntegracao as e:
                 logging.error("Integração (%s): %s", protocolo, e)
-                messagebox.showerror("Erro de integração",
+                dialogos.mensagem("Erro de integração",
                                      f"O chamado {protocolo} foi registrado, mas a tarefa não foi criada no FlowUp:"
                                      f"\n\n{e}\n\nAbra o chamado em Chamados e salve de novo para tentar outra vez.")
                 texto += " Tarefa pendente no FlowUp."

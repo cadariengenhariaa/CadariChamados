@@ -6,7 +6,7 @@
 
 Programa interno da Cadari para a equipe pedir suporte, fazer a triagem dos pedidos e transformar cada chamado em tarefa no FlowUp.
 
-**Status:** em produção · **Versão:** 2.4.0 · **Python:** 3.12 · [Histórico de versões](CHANGELOG.md)
+**Status:** em produção · **Versão:** 2.5.0 · **Python:** 3.12 · [Histórico de versões](CHANGELOG.md)
 
 ## Índice
 
@@ -42,7 +42,8 @@ Todos os usuários trabalham sobre os mesmos dados, que ficam numa pasta da rede
 - **Tarefa no FlowUp:** com responsável definido, a tarefa é criada no FlowUp. Sem responsável, o chamado aguarda triagem na aba "Chamados".
 - **Acompanhamento:** a aba "Chamados" tem a lista com filtros e o painel de detalhes, com os botões para salvar alterações (atualiza a tarefa) e excluir (apaga o chamado e a tarefa). Os status são os mesmos do quadro do FlowUp.
 - **Equipe sincronizada:** a cada abertura, a lista de pessoas é atualizada com os usuários ativos do FlowUp.
-- **Verificação do computador:** na abertura e pelo botão "Verificar computador", o programa confere a pasta da rede, a permissão de gravação, o banco e a conexão com o FlowUp, e mostra o que falta quando algo não está certo.
+- **Verificação do computador:** na abertura e pelo botão "Verificar computador", o programa confere a pasta da rede, a permissão de gravação, o banco e a conexão com o FlowUp, e mostra o que falta quando algo não está certo. Só uma verificação roda por vez.
+- **Uma janela por vez:** o programa não abre duas vezes no mesmo computador (abrir de novo traz a janela que já está aberta), e as janelas secundárias (verificação, mensagens, confirmações) bloqueiam a principal até serem fechadas.
 - **Tema claro e escuro, e zoom:** a escolha fica salva por pessoa.
 - **Ambientes de Testes e Produção:** toda alteração é validada num exe de Testes, com dados e quadro do FlowUp próprios, antes de chegar à equipe ([docs/ambientes.md](docs/ambientes.md)).
 
@@ -171,6 +172,7 @@ CadariChamados/
 │       ├── flowup_api.py           # chamadas à API do FlowUp
 │       ├── servico.py              # regras da integração (criar, atualizar e excluir tarefas)
 │       ├── verificacao.py          # verificação do computador (rede, permissões, FlowUp)
+│       ├── instancia.py            # instância única: o programa não abre duas vezes
 │       ├── diagnostico_flowup.py   # diagnóstico da integração (scripts\diagnosticar_flowup.bat)
 │       ├── atualizar_testes.py     # copia os dados de Produção para Testes (scripts\atualizar_testes.bat)
 │       └── interface/              # telas (CustomTkinter)

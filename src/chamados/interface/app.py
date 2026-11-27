@@ -15,8 +15,6 @@ import threading
 import time
 import traceback
 from datetime import datetime
-from tkinter import messagebox
-
 import customtkinter
 
 from chamados import verificacao
@@ -25,7 +23,7 @@ from chamados.config import (EM_TESTES, FLOWUP_PADRAO, VERSAO, carregar_config_f
 from chamados.database import criar_tabela
 from chamados.equipe import carregar_equipe
 from chamados.servico import carregar_status
-from chamados.interface import tema
+from chamados.interface import dialogos, tema
 from chamados.interface.carregamento import TelaCarregamento
 from chamados.interface.comum import CALENDARIOS, chave_ordenacao
 from chamados.interface.janela_verificacao import JanelaVerificacao
@@ -91,6 +89,8 @@ class App(customtkinter.CTk):
                 self._etapa = (0.05 + 0.55 * i / total, etapas.get(nome, "Verificando"))
                 self._etapa_inicio = time.monotonic()
 
+            # Reserva a verificação até a janela de resultado (se aparecer) ser fechada
+            verificacao.iniciar_verificacao()
             self.verificacao = verificacao.verificar_tudo(avancar)
             situacao = {it.nome: it.situacao for it in self.verificacao}
             if situacao.get("Pasta da rede") == verificacao.ERRO:
@@ -142,7 +142,9 @@ class App(customtkinter.CTk):
         avisos = [i for i in self.verificacao if i.situacao == verificacao.AVISO]
         if situacao == "erro" or erros:
             JanelaVerificacao(self, self.verificacao or [verificacao.Item("Abertura", verificacao.ERRO, str(valor))])
-        elif avisos:
+            return
+        verificacao.concluir_verificacao()
+        if avisos:
             self.avisar(f"Verificação do computador: {len(avisos)} aviso(s) ({', '.join(a.nome for a in avisos)}). "
                         "Clique em Verificar computador para ver.")
 
@@ -236,12 +238,19 @@ class App(customtkinter.CTk):
                         text_color=tema.BRANCO if n == nome else tema.CINZA)
 
     def verificar_computador(self):
-        """Roda a verificação em segundo plano e mostra o resultado."""
+        """Roda a verificação em segundo plano e mostra o resultado. Só uma verificação por vez."""
+        if not verificacao.iniciar_verificacao():
+            dialogos.mensagem("Verificação do computador", verificacao.MENSAGEM_EM_ANDAMENTO, self)
+            return
         self.avisar("Verificando o computador...")
         resultado = {}
 
         def rodar():
-            resultado["itens"] = verificacao.verificar_tudo()
+            try:
+                resultado["itens"] = verificacao.verificar_tudo()
+            except Exception as e:  # sem isso a verificação ficaria presa como "em andamento"
+                logging.error("Falha na verificação do computador: %s", e, exc_info=True)
+                resultado["itens"] = [verificacao.Item("Verificação", verificacao.ERRO, str(e))]
 
         def esperar():
             if "itens" in resultado:
@@ -289,4 +298,4 @@ class App(customtkinter.CTk):
 
     def report_callback_exception(self, exc, val, tb):
         logging.error("Erro não tratado na interface:\n%s", "".join(traceback.format_exception(exc, val, tb)))
-        messagebox.showerror("Erro inesperado", f"{val}\n\nO detalhe foi gravado no log do programa.")
+        dialogos.mensagem("Erro inesperado", f"{val}\n\nO detalhe foi gravado no log do programa.", self)

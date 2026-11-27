@@ -2,6 +2,17 @@
 
 Formato: a versão mais nova primeiro. Cada versão distribuída deve ter uma entrada aqui e o mesmo número em `__version__` no `src/chamados/__init__.py`.
 
+## 2.5.0 (novembro de 2026)
+
+### Adicionado
+- Uma verificação do computador por vez (tarefa S05). Ao clicar em **Verificar computador** com outra em andamento, aparece "Já existe uma verificação em andamento. Finalize-a antes de iniciar uma nova." A verificação vale até a janela de resultado ser fechada.
+- Instância única: o programa não abre duas vezes no mesmo computador. Abrir de novo traz a janela já aberta para frente e mostra um aviso. Testes e Produção podem ficar abertos ao mesmo tempo.
+- Janelas secundárias modais: a verificação do computador, as mensagens e as confirmações bloqueiam a janela principal até serem fechadas.
+
+### Alterado
+- As caixas de mensagem do Windows (erros, avisos e a confirmação de exclusão) foram trocadas por caixas com a identidade visual da Cadari: topo azul com o check dourado, linha dourada e rodapé diagonal, nos temas claro e escuro. Na exclusão, o botão destacado é **Cancelar**.
+- A janela de verificação do computador ganhou o rodapé diagonal e o ícone da Cadari.
+
 ## 2.4.0 (novembro de 2026)
 
 ### Adicionado

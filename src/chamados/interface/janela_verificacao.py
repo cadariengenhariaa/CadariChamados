@@ -1,23 +1,23 @@
-"""Janela com o resultado da verificação do computador (botão "Verificar computador")."""
+"""
+Janela com o resultado da verificação do computador (botão "Verificar computador").
+
+É modal: enquanto está aberta, a janela principal fica bloqueada. A verificação só é
+dada como concluída quando esta janela é fechada; até lá, um novo pedido é recusado.
+"""
 
 import customtkinter
 
 from chamados import verificacao
 from chamados.interface import tema
+from chamados.interface.dialogos import JanelaModal
 
 
-class JanelaVerificacao(customtkinter.CTkToplevel):
+class JanelaVerificacao(JanelaModal):
     CORES = {verificacao.OK: ("#2E7D4F", "#7DC383"), verificacao.AVISO: ("#9A6B00", "#F2CF5B"),
              verificacao.ERRO: ("#8E2B2B", "#E08A84")}
 
     def __init__(self, master, itens):
-        super().__init__(master)
-        self.title("Verificação do computador")
-        x = master.winfo_rootx() + max(0, (master.winfo_width() - 720) // 2)
-        y = master.winfo_rooty() + max(0, (master.winfo_height() - 520) // 2)
-        self.geometry(f"720x520+{x}+{y}")
-        self.configure(fg_color=tema.COR["fundo"])
-        self.transient(master)
+        super().__init__(master, "Verificação do computador")
         self.itens = itens
         titulo = tema.TituloSecao(self, "Verificação do computador")
         titulo.pack(anchor="w", padx=24, pady=(20, 8))
@@ -26,6 +26,7 @@ class JanelaVerificacao(customtkinter.CTkToplevel):
         resumo = ("Tudo certo: este computador tem o que o programa precisa." if not erros and not avisos else
                   f"{erros} erro(s) e {avisos} aviso(s). Erros impedem o uso; avisos limitam a integração com o FlowUp.")
         tema.rotulo(self, resumo, 11, "texto", wraplength=660).pack(anchor="w", padx=24)
+        tema.Rodape(self, altura=22).pack(fill="x", side="bottom")  # antes da lista, para não ser espremido
         lista = customtkinter.CTkScrollableFrame(self, fg_color=tema.COR["painel"], corner_radius=0)
         lista.pack(fill="both", expand=True, padx=24, pady=12)
         lista.grid_columnconfigure(1, weight=1)
@@ -41,7 +42,12 @@ class JanelaVerificacao(customtkinter.CTkToplevel):
         tema.botao(acoes, "Fechar", self.destroy, tipo="secundario", width=100).pack(side="left", padx=10)
         self.copiado = tema.rotulo(acoes, "", 9)
         self.copiado.pack(side="left", padx=8)
-        self.after(100, self.lift)
+        self.centralizar(720, 540)
+        self.ativar()
+
+    def destroy(self):
+        verificacao.concluir_verificacao()
+        super().destroy()
 
     def copiar(self):
         self.clipboard_clear()
